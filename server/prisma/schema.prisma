@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum TopicInputType {
+  TEXT
+  IMAGE
+}
+
+enum MessageRole {
+  USER
+  AI
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id              String           @id // = Supabase auth.users.id
+  email           String           @unique
+  name            String
+  avatarUrl       String?
+  role            Role             @default(STUDENT)
+  emailVerified   Boolean          @default(true)
+  notificationsOn Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  topics          Topic[]
+  entitlements    Entitlement[]
+  payments        Payment[]
+  usage           GenerationUsage[]
+}
+
+model Topic {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompt      String
+  inputType   TopicInputType  @default(TEXT)
+  level       String?
+  discipline  String?
+  reply       String
+  saved       Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  messages    Message[]
+  chapters    Chapter[]
+  entitlement Entitlement?
+  payments    Payment[]
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  topicId   String
+  topic     Topic       @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  role      MessageRole
+  content   String
+  createdAt DateTime    @default(now())
+}
+
+model Chapter {
+  id            String   @id @default(cuid())
+  topicId       String
+  topic         Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  chapterNumber Int
+  content       String
+  generatedAt   DateTime @default(now())
+
+  @@unique([topicId, chapterNumber])
+}
+
+model Entitlement {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId          String   @unique
+  topic            Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  unlockedChapters Int      @default(5)
+  source           String   @default("PAYSTACK")
+  createdAt        DateTime @default(now())
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId   String?
+  topic     Topic?        @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  reference String        @unique
+  amount    Int
+  currency  String        @default("NGN")
+  status    PaymentStatus @default(PENDING)
+  paidAt    DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model GenerationUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  date      DateTime
+  count     Int      @default(0)
+
+  @@unique([userId, action, date])
+}
