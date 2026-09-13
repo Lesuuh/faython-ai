@@ -53,7 +53,7 @@ export function ResetPassword() {
   if (!supabaseConfigured) {
     return (
       <AuthLayout title="Reset not available" subtitle="Authentication is not configured yet.">
-        <p className="muted text-sm">
+        <p className="text-muted text-[13px]">
           Set up Supabase and the recovery link will work here.{" "}
           <Link to="/login">Back to sign in</Link>
         </p>
@@ -64,10 +64,10 @@ export function ResetPassword() {
   if (!ready) {
     return (
       <AuthLayout title="Loading…" subtitle="Connecting to your recovery session.">
-        <div className="loader-row">
-          <span className="spinner" />
+        <div className="flex justify-center p-8">
+          <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
         </div>
-        <p className="muted text-sm">
+        <p className="text-muted text-[13px]">
           Open the full link from your email, or{" "}
           <Link to="/forgot-password">request a new one</Link>.
         </p>
@@ -77,10 +77,10 @@ export function ResetPassword() {
 
   return (
     <AuthLayout title="Choose a new password" subtitle="Enter a new password for your account.">
-      {error && <div className="form-error">{error}</div>}
+      {error && <div className="mb-4 rounded-md border border-danger-border bg-danger-bg px-4 py-3 text-[13px] text-danger">{error}</div>}
       <form onSubmit={onSubmit}>
-        <div className="field">
-          <label htmlFor="password">New password</label>
+        <div className="mb-5 grid gap-1.5">
+          <label htmlFor="password" className="text-[13px] font-semibold text-foreground">New password</label>
           <input
             id="password"
             type="password"
@@ -89,10 +89,11 @@ export function ResetPassword() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
           />
         </div>
-        <div className="field">
-          <label htmlFor="confirm">Confirm new password</label>
+        <div className="mb-5 grid gap-1.5">
+          <label htmlFor="confirm" className="text-[13px] font-semibold text-foreground">Confirm new password</label>
           <input
             id="confirm"
             type="password"
@@ -100,11 +101,12 @@ export function ResetPassword() {
             required
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
+            className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
           />
-          {confirm && password !== confirm && <span className="error">Passwords do not match.</span>}
+          {confirm && password !== confirm && <span className="text-danger text-xs">Passwords do not match.</span>}
         </div>
-        <button className="btn btn-primary btn-block" disabled={loading}>
-          {loading ? <span className="spinner" /> : "Update password"}
+        <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed w-full justify-center" disabled={loading}>
+          {loading ? <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" /> : "Update password"}
         </button>
       </form>
     </AuthLayout>

@@ -11,7 +11,7 @@ export function GoogleButton() {
 
   if (!available) {
     return (
-      <button type="button" disabled className="btn btn-outline btn-block" title="Enable the Google provider in Supabase to unlock this">
+      <button type="button" disabled className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-background text-foreground border-border hover:bg-surface disabled:opacity-45 disabled:cursor-not-allowed w-full justify-center" title="Enable the Google provider in Supabase to unlock this">
         <GoogleIcon /> Continue with Google
       </button>
     );
@@ -21,7 +21,7 @@ export function GoogleButton() {
     <button
       type="button"
       disabled={redirecting}
-      className="btn btn-outline btn-block"
+      className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-background text-foreground border-border hover:bg-surface disabled:opacity-45 disabled:cursor-not-allowed w-full justify-center"
       onClick={async () => {
         setRedirecting(true);
         try {
@@ -36,7 +36,7 @@ export function GoogleButton() {
         }
       }}
     >
-      {redirecting ? <span className="spinner" /> : <GoogleIcon />}
+      {redirecting ? <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" /> : <GoogleIcon />}
       Continue with Google
     </button>
   );

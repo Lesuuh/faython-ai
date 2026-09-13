@@ -143,44 +143,44 @@ export function GenerateTopics() {
   }
 
   return (
-    <div className="chat-layout">
-      <header className="navbar">
-        <div className="container navbar-inner" style={{ justifyItems: "center" }}>
-          <Link to="/" className="dash-brand" style={{ margin: 0 }}>
-            <span className="logo">F</span>
-            Faython <span className="muted">Scholar</span>
+    <div className="flex min-h-[100vh] flex-col">
+      <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-[12px]">
+        <div className="w-full max-w-[1200px] mx-auto px-6 max-sm:px-5 flex items-center justify-between gap-6 h-[68px]" style={{ justifyItems: "center" }}>
+          <Link to="/" className="mb-6 flex items-center gap-2.5 text-base font-medium tracking-[-0.02em]" style={{ margin: 0 }}>
+            <span className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-sm bg-foreground text-[14px] font-bold text-background">F</span>
+            Faython <span className="text-muted">Scholar</span>
           </Link>
-          <div className="navbar-actions">
-            <Link to="/dashboard" className="btn btn-outline btn-sm">
+          <div className="flex items-center gap-2">
+            <Link to="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-background text-foreground border-border hover:bg-surface disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm">
               Dashboard
             </Link>
-            <button className="btn btn-ghost btn-sm" onClick={() => navigate("/dashboard/history")}>
+            <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm" onClick={() => navigate("/dashboard/history")}>
               History
             </button>
           </div>
         </div>
       </header>
 
-      <main className="chat-main">
-        <div className="row" style={{ gap: "0.5rem" }}>
-          <Link to="/dashboard" className="btn btn-ghost btn-sm" style={{ paddingLeft: "0.25rem" }}>
+      <main className="mx-auto flex w-full max-w-[860px] flex-1 flex-col gap-4 p-6">
+        <div className="flex items-center gap-2.5" style={{ gap: "0.5rem" }}>
+          <Link to="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm" style={{ paddingLeft: "0.25rem" }}>
             <ArrowLeft size={15} /> Back
           </Link>
-          <span className="muted text-sm" style={{ marginLeft: "auto" }}>
+          <span className="text-muted text-[13px]" style={{ marginLeft: "auto" }}>
             Signed in as {firstName.split(" ")[0]}
           </span>
         </div>
 
-        <div className="detail-panel" style={{ marginBottom: "12px" }}>
-          <div className="detail-panel-head" onClick={() => setDetailsOpen((v) => !v)}>
-            <div className="row" style={{ gap: "10px" }}>
+        <div className="rounded-lg border border-border bg-background" style={{ marginBottom: "12px" }}>
+          <div className="flex cursor-pointer items-center justify-between gap-4 px-5 py-3.5 select-none" onClick={() => setDetailsOpen((v) => !v)}>
+            <div className="flex items-center gap-2.5" style={{ gap: "10px" }}>
               <Settings2 size={16} style={{ color: "var(--muted)" }} />
               <h3 style={{ margin: 0 }}>Project details</h3>
-              <span className="hint">Course · Level · University · Referencing style · Chapters</span>
+              <span className="text-muted-foreground text-xs">Course · Level · University · Referencing style · Chapters</span>
             </div>
-            <div className="row" style={{ gap: "12px" }}>
+            <div className="flex items-center gap-2.5" style={{ gap: "12px" }}>
               {!detailsOpen && profileChips.length > 0 && (
-                <div className="profile-summary" style={{ display: "none" }} />
+                <div className="flex flex-wrap gap-2" style={{ display: "none" }} />
               )}
               <ChevronDown
                 size={16}
@@ -190,9 +190,9 @@ export function GenerateTopics() {
           </div>
 
           {!detailsOpen && profileChips.length > 0 && (
-            <div className="profile-summary" style={{ padding: "0 20px 14px" }}>
+            <div className="flex flex-wrap gap-2" style={{ padding: "0 20px 14px" }}>
               {profileChips.map((c) => (
-                <span className="profile-chip" key={c}>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-[5px] text-xs font-medium whitespace-nowrap text-foreground" key={c}>
                   {c}
                 </span>
               ))}
@@ -200,30 +200,33 @@ export function GenerateTopics() {
           )}
 
           {detailsOpen && (
-            <div className="detail-form">
-              <div className="field field--wide">
-                <label htmlFor="faython-university">University / school</label>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4 border-t border-border p-5">
+              <div className="grid gap-1.5 col-span-full">
+                <label htmlFor="faython-university" className="text-[13px] font-semibold text-foreground">University / school</label>
                 <input
                   id="faython-university"
+                  className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
                   value={profile.university}
                   onChange={(e) => update({ university: e.target.value })}
                   placeholder="e.g. University of Port Harcourt"
                 />
-                <span className="hint">The AI writes with your school's context in mind.</span>
+                <span className="text-muted text-xs">The AI writes with your school's context in mind.</span>
               </div>
-              <div className="field">
-                <label htmlFor="faython-course">Course of study</label>
+              <div className="grid gap-1.5">
+                <label htmlFor="faython-course" className="text-[13px] font-semibold text-foreground">Course of study</label>
                 <input
                   id="faython-course"
+                  className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
                   value={profile.course}
                   onChange={(e) => update({ course: e.target.value })}
                   placeholder="e.g. Computer Science"
                 />
               </div>
-              <div className="field">
-                <label htmlFor="faython-level">Academic level</label>
+              <div className="grid gap-1.5">
+                <label htmlFor="faython-level" className="text-[13px] font-semibold text-foreground">Academic level</label>
                 <select
                   id="faython-level"
+                  className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
                   value={profile.level}
                   onChange={(e) => update({ level: e.target.value as ProjectProfile["level"] })}
                 >
@@ -235,10 +238,11 @@ export function GenerateTopics() {
                   ))}
                 </select>
               </div>
-              <div className="field">
-                <label htmlFor="faython-style">Referencing style</label>
+              <div className="grid gap-1.5">
+                <label htmlFor="faython-style" className="text-[13px] font-semibold text-foreground">Referencing style</label>
                 <select
                   id="faython-style"
+                  className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
                   value={profile.referencingStyle}
                   onChange={(e) => update({ referencingStyle: e.target.value })}
                 >
@@ -249,13 +253,14 @@ export function GenerateTopics() {
                   ))}
                 </select>
               </div>
-              <div className="field field--wide">
-                <label>Chapter structure</label>
-                <div className="chapter-name-inputs">
+              <div className="grid gap-1.5 col-span-full">
+                <label className="text-[13px] font-semibold text-foreground">Chapter structure</label>
+                <div className="grid gap-2">
                   {profile.chapterNames.map((name, idx) => (
-                    <div className="row" key={idx} style={{ gap: "10px" }}>
-                      <span className="chapter-num">{idx + 1}</span>
+                    <div className="flex items-center gap-2.5" key={idx} style={{ gap: "10px" }}>
+                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-sm border border-primary-border bg-primary-soft text-[13px] font-bold text-primary">{idx + 1}</span>
                       <input
+                        className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
                         value={name}
                         onChange={(e) =>
                           update({
@@ -273,34 +278,35 @@ export function GenerateTopics() {
           )}
         </div>
 
-        <div className="usage-pill" style={{ marginBottom: "12px" }}>
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3.5 py-1.5 text-xs font-[550] whitespace-nowrap text-foreground" style={{ marginBottom: "12px" }}>
           <BookOpen size={14} /> Topics today:{" "}
           <strong>
             {usage.topics}/{FREE_TOPICS_PER_DAY}
           </strong>
           {remaining > 0 ? (
-            <span className="muted"> · {remaining} left</span>
+            <span className="text-muted"> · {remaining} left</span>
           ) : (
             <span style={{ color: "var(--danger)" }}> · daily limit reached</span>
           )}
         </div>
 
-        <div ref={scrollRef} className="chat-scroll" aria-live="polite">
+        <div ref={scrollRef} className="flex flex-1 flex-col gap-4 overflow-y-auto pb-2" aria-live="polite">
           {messages.length === 0 && !loading && (
-            <div className="empty-chat">
-              <div className="ic">
+            <div className="mx-auto flex max-w-[620px] flex-1 flex-col items-start justify-center px-4 py-8 text-left">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md border border-primary-border bg-primary-soft text-primary">
                 <BookOpen size={24} />
               </div>
-              <h3>Start your project</h3>
-              <p>
+              <h3 className="mb-2 text-[22px] font-bold tracking-[-0.02em] text-foreground">Start your project</h3>
+              <p className="text-muted mb-6 max-w-[52ch] leading-[1.7]">
                 Set your course, level, university and referencing style in Project details — then
                 give Faython your research interest in a sentence, or as a photo of your assignment.
                 You'll get scoped topic suggestions you can open as a project.
               </p>
-              <div className="chat-suggestions" style={{ marginTop: "1.25rem", justifyContent: "center" }}>
+              <div className="mb-1 flex flex-wrap gap-2" style={{ marginTop: "1.25rem", justifyContent: "center" }}>
                 {suggestions.map((s) => (
                   <button
                     key={s}
+                    className="rounded-full border border-border bg-background px-3.5 py-2 text-[13px] text-muted transition-[border-color,color,background] duration-150 hover:border-primary hover:text-primary"
                     onClick={() => {
                       setInput(s);
                       textareaRef.current?.focus();
@@ -314,12 +320,19 @@ export function GenerateTopics() {
           )}
 
           {messages.map((m, i) => (
-            <div key={i} className={m.role === "assistant" ? "msg msg-ai" : "msg msg-user"}>
-              {m.imagePreview && <img src={m.imagePreview} alt="Uploaded prompt" />}
+            <div
+              key={i}
+              className={
+                m.role === "assistant"
+                  ? "max-w-[82%] rounded-lg px-[18px] py-3.5 text-sm leading-[1.65] whitespace-pre-wrap break-words self-start rounded-bl-sm border border-border bg-surface text-foreground"
+                  : "max-w-[82%] rounded-lg px-[18px] py-3.5 text-sm leading-[1.65] whitespace-pre-wrap break-words self-end rounded-br-sm bg-primary text-primary-foreground"
+              }
+            >
+              {m.imagePreview && <img src={m.imagePreview} alt="Uploaded prompt" className="mb-2 block max-h-[180px] max-w-full rounded-md" />}
               <span style={{ whiteSpace: m.role === "user" ? "normal" : "pre-wrap" }}>{m.text}</span>
               {m.role === "assistant" && m.topicId && (
                 <button
-                  className="save-btn"
+                  className="mt-2.5 inline-flex items-center gap-1.5 rounded-sm border border-border bg-transparent px-3 py-2 text-[13px] text-primary transition-[background] duration-150 hover:bg-primary-soft"
                   onClick={() => navigate(`/project/${m.topicId}`)}
                 >
                   <ArrowRight size={14} /> Open project
@@ -329,22 +342,22 @@ export function GenerateTopics() {
           ))}
 
           {loading && (
-            <div className="typing">
+            <div className="flex items-center gap-[5px] self-start px-2 py-1 text-[14px] text-muted">
               Faython is thinking
-              <span className="dot" />
-              <span className="dot" />
-              <span className="dot" />
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             </div>
           )}
         </div>
 
-        <div className="chat-inputbar">
+        <div className="rounded-lg border border-border bg-background p-2.5 shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]">
           {image && (
-            <div className="chat-preview">
-              <img src={image.url} alt="Selected" />
-              <span className="grow">Image attached</span>
+            <div className="mb-2 flex items-center gap-2.5 rounded-md bg-surface p-2 text-[13px] text-muted">
+              <img src={image.url} alt="Selected" className="h-11 w-11 rounded-sm object-cover" />
+              <span className="flex-1">Image attached</span>
               <button
-                className="btn btn-ghost btn-icon-sm"
+                className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed p-[7px] leading-none"
                 onClick={() => setImage(null)}
                 aria-label="Remove image"
               >
@@ -352,9 +365,10 @@ export function GenerateTopics() {
               </button>
             </div>
           )}
-          <div className="chat-row">
+          <div className="flex items-end gap-2">
             <textarea
               ref={textareaRef}
+              className="min-h-11 max-h-[140px] flex-1 resize-none border-none bg-transparent px-2.5 py-2 text-[15px] text-foreground outline-none"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
@@ -363,7 +377,7 @@ export function GenerateTopics() {
               disabled={atLimit && !image}
             />
             <button
-              className="btn btn-primary btn-icon"
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed p-[11px] leading-none"
               onClick={handleSubmit}
               disabled={loading || (!input.trim() && !image) || atLimit}
               aria-label="Send"
@@ -371,13 +385,13 @@ export function GenerateTopics() {
               <Send size={17} />
             </button>
           </div>
-          <div className="chat-tools">
+          <div className="flex items-center gap-1 border-t border-border pt-2">
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPickImage} />
-            <button onClick={() => fileRef.current?.click()}>
+            <button className="inline-flex items-center gap-1.5 rounded-sm border-none bg-transparent p-2 text-[13px] text-muted hover:bg-surface hover:text-foreground" onClick={() => fileRef.current?.click()}>
               <ImagePlus size={16} /> Image
             </button>
-            <span className="spacer" />
-            <span className="muted text-xs">Text · Image prompts</span>
+            <span className="flex-1" />
+            <span className="text-muted text-xs">Text · Image prompts</span>
           </div>
         </div>
       </main>

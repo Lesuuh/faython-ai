@@ -34,15 +34,15 @@ export function DashboardSettings() {
 
   return (
     <>
-      <div className="dash-title">Settings</div>
-      <p className="dash-sub">Manage your preferences.</p>
+      <div className="text-2xl font-bold tracking-[-0.02em] mb-1">Settings</div>
+      <p className="text-muted text-sm mb-6 max-w-[62ch] leading-[1.65]">Manage your preferences.</p>
 
-      <div className="card" style={{ marginBottom: "1.25rem" }}>
+      <div className="rounded-lg border border-border bg-background p-8" style={{ marginBottom: "1.25rem" }}>
         <h3 style={{ marginBottom: "0.5rem" }}>Email notifications</h3>
-        <p className="muted text-sm" style={{ marginBottom: "0.75rem" }}>
+        <p className="text-muted text-[13px]" style={{ marginBottom: "0.75rem" }}>
           Receive occasional updates about Faython and new features.
         </p>
-        <label className="row" style={{ justifyContent: "flex-start", cursor: "pointer", gap: "0.6rem" }}>
+        <label className="flex items-center gap-2.5" style={{ justifyContent: "flex-start", cursor: "pointer", gap: "0.6rem" }}>
           <input
             type="checkbox"
             checked={notificationsOn}
@@ -52,10 +52,10 @@ export function DashboardSettings() {
         </label>
       </div>
 
-      <div className="danger-zone">
-        <h3>Danger zone</h3>
-        <p>Deleting your account removes your profile and all saved topics permanently.</p>
-        <button className="btn btn-danger" onClick={deleteAccount}>
+      <div className="rounded-lg border border-danger-border bg-background p-6">
+        <h3 className="mb-1.5 text-base text-danger">Danger zone</h3>
+        <p className="mb-3.5 max-w-[60ch] text-sm leading-[1.65] text-muted">Deleting your account removes your profile and all saved topics permanently.</p>
+        <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-danger text-white hover:brightness-95 disabled:opacity-45 disabled:cursor-not-allowed" onClick={deleteAccount}>
           Delete account
         </button>
       </div>

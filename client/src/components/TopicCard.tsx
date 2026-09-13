@@ -28,14 +28,14 @@ export function TopicCard({ topic, compact }: { topic: Topic; compact?: boolean 
   };
 
   return (
-    <div className="topic-card">
-      <div className="topic-head">
-        <div className="grow" style={{ minWidth: 0 }}>
-          <div className="topic-prompt" style={{ fontWeight: 600, color: "var(--fg)" }}>
+    <div className="rounded-lg border border-border bg-background p-5 transition-[border-color,box-shadow] duration-150 hover:shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1" style={{ minWidth: 0 }}>
+          <div className="mb-2 text-xs font-medium text-muted" style={{ fontWeight: 600, color: "var(--fg)" }}>
             {topic.prompt}
           </div>
           {!compact && (
-            <div className="topic-reply">
+            <div className="text-sm leading-[1.7] whitespace-pre-wrap text-foreground">
               {items.length > 0 ? (
                 items.map((item, i) => (
                   <div key={i} style={{ marginBottom: "0.4rem" }}>
@@ -48,31 +48,31 @@ export function TopicCard({ topic, compact }: { topic: Topic; compact?: boolean 
             </div>
           )}
         </div>
-        <div className="topic-actions">
-          <Link className="btn btn-ghost btn-icon-sm" to={`/project/${topic.id}`} aria-label="Open project">
+        <div className="flex flex-shrink-0 gap-1">
+          <Link className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed p-[7px] leading-none" to={`/project/${topic.id}`} aria-label="Open project">
             <ExternalLink size={15} />
           </Link>
-          <button className="btn btn-ghost btn-icon-sm" onClick={onCopy} aria-label="Copy">
+          <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed p-[7px] leading-none" onClick={onCopy} aria-label="Copy">
             <Copy size={15} />
           </button>
-          <button className="btn btn-ghost btn-icon-sm" onClick={onSave} aria-label={topic.saved ? "Unsave" : "Save"}>
+          <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed p-[7px] leading-none" onClick={onSave} aria-label={topic.saved ? "Unsave" : "Save"}>
             {topic.saved ? <BookmarkCheck size={15} style={{ color: "var(--primary)" }} /> : <Bookmark size={15} />}
           </button>
-          <button className="btn btn-ghost btn-icon-sm" onClick={onDelete} aria-label="Delete" disabled={deleteTopic.isPending}>
+          <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed p-[7px] leading-none" onClick={onDelete} aria-label="Delete" disabled={deleteTopic.isPending}>
             <Trash2 size={15} style={{ color: "var(--danger)" }} />
           </button>
         </div>
       </div>
       {compact && (
-        <div className="topic-reply" style={{ whiteSpace: "pre-wrap", maxHeight: 140, overflow: "hidden" }}>
+        <div className="text-sm leading-[1.7] whitespace-pre-wrap text-foreground" style={{ whiteSpace: "pre-wrap", maxHeight: 140, overflow: "hidden" }}>
           {topic.reply.slice(0, 300)}
           {topic.reply.length > 300 ? "\n…" : ""}
         </div>
       )}
-      <div className="topic-meta">
-        <span className="badge badge-primary">{topic.level || "Level unknown"}</span>
-        <span className="badge badge-neutral">{topic.discipline || "Discipline unknown"}</span>
-        <span className="badge badge-neutral">{inputTypeLabel(topic.inputType)}</span>
+      <div className="mt-2.5 flex flex-wrap gap-2 text-xs text-muted">
+        <span className="inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold bg-primary text-primary-foreground">{topic.level || "Level unknown"}</span>
+        <span className="inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold border border-border bg-surface text-muted">{topic.discipline || "Discipline unknown"}</span>
+        <span className="inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold border border-border bg-surface text-muted">{inputTypeLabel(topic.inputType)}</span>
         <span className="text-xs" style={{ alignSelf: "center" }}>
           {new Date(topic.createdAt).toLocaleString()}
         </span>

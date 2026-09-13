@@ -8,8 +8,8 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 
   if (loading) {
     return (
-      <div className="loader-row">
-        <span className="spinner" />
+      <div className="flex justify-center p-8">
+        <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
       </div>
     );
   }
@@ -25,8 +25,8 @@ export function PublicOnlyRoute({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
   if (loading) {
     return (
-      <div className="loader-row">
-        <span className="spinner" />
+      <div className="flex justify-center p-8">
+        <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
       </div>
     );
   }
