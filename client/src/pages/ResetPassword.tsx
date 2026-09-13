@@ -3,6 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/AuthLayout";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
+import { Button } from "@/components/ui/Button";
+import { Field, Input } from "@/components/ui/Field";
+import { Spinner } from "@/components/ui/Spinner";
 
 export function ResetPassword() {
   const navigate = useNavigate();
@@ -12,8 +15,6 @@ export function ResetPassword() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Supabase redirects here with the recovery session in the URL hash; supabase-js
-  // picks it up so we can update the password.
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setReady(Boolean(data.session));
@@ -53,9 +54,11 @@ export function ResetPassword() {
   if (!supabaseConfigured) {
     return (
       <AuthLayout title="Reset not available" subtitle="Authentication is not configured yet.">
-        <p className="text-muted text-[13px]">
+        <p className="text-[13px] text-muted">
           Set up Supabase and the recovery link will work here.{" "}
-          <Link to="/login">Back to sign in</Link>
+          <Link to="/login" className="font-semibold text-primary underline underline-offset-[3px]">
+            Back to sign in
+          </Link>
         </p>
       </AuthLayout>
     );
@@ -65,11 +68,14 @@ export function ResetPassword() {
     return (
       <AuthLayout title="Loading…" subtitle="Connecting to your recovery session.">
         <div className="flex justify-center p-8">
-          <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+          <Spinner size={22} />
         </div>
-        <p className="text-muted text-[13px]">
+        <p className="text-[13px] text-muted">
           Open the full link from your email, or{" "}
-          <Link to="/forgot-password">request a new one</Link>.
+          <Link to="/forgot-password" className="font-semibold text-primary underline underline-offset-[3px]">
+            request a new one
+          </Link>
+          .
         </p>
       </AuthLayout>
     );
@@ -77,37 +83,44 @@ export function ResetPassword() {
 
   return (
     <AuthLayout title="Choose a new password" subtitle="Enter a new password for your account.">
-      {error && <div className="mb-4 rounded-md border border-danger-border bg-danger-bg px-4 py-3 text-[13px] text-danger">{error}</div>}
-      <form onSubmit={onSubmit}>
+      {error && (
+        <div className="mb-5 rounded-md border border-danger-border bg-danger-bg px-4 py-3 text-[13px] text-danger" role="alert">
+          {error}
+        </div>
+      )}
+      <form onSubmit={onSubmit} noValidate>
         <div className="mb-5 grid gap-1.5">
-          <label htmlFor="password" className="text-[13px] font-semibold text-foreground">New password</label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
-          />
+          <Field label="New password" htmlFor="password">
+            <Input
+              id="password"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
         </div>
         <div className="mb-5 grid gap-1.5">
-          <label htmlFor="confirm" className="text-[13px] font-semibold text-foreground">Confirm new password</label>
-          <input
-            id="confirm"
-            type="password"
-            autoComplete="new-password"
-            required
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
-          />
-          {confirm && password !== confirm && <span className="text-danger text-xs">Passwords do not match.</span>}
+          <Field
+            label="Confirm new password"
+            htmlFor="confirm"
+            error={confirm && password !== confirm ? "Passwords do not match." : null}
+          >
+            <Input
+              id="confirm"
+              type="password"
+              autoComplete="new-password"
+              required
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+            />
+          </Field>
         </div>
-        <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed w-full justify-center" disabled={loading}>
-          {loading ? <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" /> : "Update password"}
-        </button>
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? <Spinner size={16} /> : "Update password"}
+        </Button>
       </form>
     </AuthLayout>
   );

@@ -1,8 +1,12 @@
 import { useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, Lock, Unlock, RefreshCw } from "lucide-react";
+import { ArrowLeft, Lock, RefreshCw, Unlock } from "lucide-react";
 import { useTopicDetail, useGenerateChapter, useGenerateChapterOne, chapterTitle } from "@/lib/hooks";
+import { ProductHeader } from "@/components/ProductHeader";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { Spinner } from "@/components/ui/Spinner";
 
 export function ProjectChapter() {
   const { id = "", chapterNum = "1" } = useParams();
@@ -26,58 +30,64 @@ export function ProjectChapter() {
 
   useEffect(() => {
     if (!topic || chapter || !allowed || requested.current) return;
-    run({ onError: (err) => toast.error(err.message || "Could not generate chapter.") });
+    run({ onError: (err) => toast.error(err.message || "Could not generate chapter. Try again.") });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topic, chapter, allowed, num]);
 
   if (isLoading) {
     return (
-      <div className="flex justify-center p-8" style={{ minHeight: "60vh" }}>
-        <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+      <div className="flex min-h-[100dvh] flex-col">
+        <ProductHeader back={{ to: `/project/${id}`, label: "Project" }} />
+        <main className="mx-auto w-full max-w-[800px] flex-1 px-5 py-6 sm:px-6 sm:py-8">
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-52" />
+            <Skeleton className="h-72 w-full" />
+          </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-[100vh] flex-col">
-      <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-[12px]">
-        <div className="w-full max-w-[1200px] mx-auto px-6 max-sm:px-5 flex items-center justify-between gap-6 h-[68px]">
-          <Link to={`/project/${id}`} className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm">
-            <ArrowLeft size={15} /> Project
-          </Link>
-          <span className="mb-6 flex items-center gap-2.5 text-base font-medium tracking-[-0.02em]" style={{ margin: 0 }}>
-            <span className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-sm bg-foreground text-[14px] font-bold text-background">F</span>
-            Chapter {num}
-          </span>
-          <span />
-        </div>
-      </header>
+    <div className="flex min-h-[100dvh] flex-col">
+      <ProductHeader
+        back={{ to: `/project/${id}`, label: "Project" }}
+        right={
+          <ButtonLink to="/generate-topics?new=1" variant="muted" size="sm" className="hidden sm:inline-flex">
+            New topic
+          </ButtonLink>
+        }
+      />
 
-      <main className="w-full max-w-[1200px] mx-auto px-6 max-sm:px-5" style={{ padding: "2rem 1.5rem", maxWidth: 800 }}>
-        <p className="text-muted text-xs uppercase tracking-[0.16em] font-semibold mb-4" style={{ marginBottom: "0.25rem" }}>
-          Chapter {num}
-        </p>
-        <h1 style={{ fontSize: "1.7rem", marginBottom: "1.25rem" }}>{chapterTitle(num)}</h1>
+      <main className="mx-auto w-full max-w-[800px] flex-1 px-5 py-6 sm:px-6 sm:py-10">
+        <div className="mb-6">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+            Chapter {num}
+          </p>
+          <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em]">{chapterTitle(num)}</h1>
+        </div>
 
         {!allowed && (
-          <div className="mt-5 flex items-center gap-3.5 rounded-lg border border-primary-border bg-primary-soft p-5">
-            <Lock size={16} />
-            <div className="flex-1">
-              <strong>This chapter is locked</strong>
-              <div className="text-muted text-[13px]">Unlock Chapters Two to Five for this project.</div>
+          <div className="flex flex-wrap items-center gap-4 rounded-lg border border-primary-border bg-primary-soft p-5">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-primary text-primary-foreground">
+              <Lock size={16} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold">This chapter is locked</div>
+              <div className="mt-0.5 text-[13px] text-muted">
+                Unlock Chapters Two to Five for this project to write it.
+              </div>
             </div>
-            <Link to={`/project/${id}`} className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed">
-              <Unlock size={15} /> Unlock
-            </Link>
+            <ButtonLink to={`/project/${id}`} size="sm">
+              <Unlock size={14} /> Unlock
+            </ButtonLink>
           </div>
         )}
 
         {allowed && pending && (
-          <div className="rounded-lg border border-border bg-background p-8" style={{ textAlign: "center", padding: "3rem 1rem" }}>
-            <div className="flex justify-center p-8">
-              <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-            </div>
-            <p className="text-muted text-[13px]" style={{ marginTop: "0.75rem" }}>
+          <div className="flex flex-col items-center justify-center rounded-lg border border-border bg-background px-4 py-16 text-center">
+            <Spinner size={26} />
+            <p className="mt-4 text-sm text-muted">
               Writing Chapter {num} — this can take up to a minute…
             </p>
           </div>
@@ -85,23 +95,32 @@ export function ProjectChapter() {
 
         {allowed && !pending && chapter && (
           <>
-            <article className="text-foreground text-[15px] leading-[1.8] rounded-lg border border-border bg-background p-8">
+            <article className="rounded-lg border border-border bg-background p-6 text-[15px] leading-[1.8] text-foreground sm:p-8">
               {chapter.content.split("\n").map((line, i) =>
-                line.trim() ? <p key={i} className="mb-3.5">{line}</p> : null,
+                line.trim() ? (
+                  <p key={i} className="mb-3.5 last:mb-0">
+                    {line}
+                  </p>
+                ) : null,
               )}
             </article>
-            <div className="flex items-center gap-2.5" style={{ marginTop: "1rem" }}>
-              <button
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-background text-foreground border-border hover:bg-surface disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm"
+            <div className="mt-4 flex flex-wrap items-center gap-2.5">
+              <Button
+                variant="secondary"
                 onClick={() =>
-                  run({ onError: (err) => toast.error(err.message || "Could not regenerate.") })
+                  run({ onError: (err) => toast.error(err.message || "Could not regenerate. Try again.") })
                 }
               >
-                <RefreshCw size={14} /> Regenerate
-              </button>
-              <Link to={`/project/${id}`} className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm">
-                Back to project
-              </Link>
+                {pending ? <Spinner size={15} /> : <RefreshCw size={14} />} Regenerate
+              </Button>
+              <ButtonLink to={`/project/${id}`} variant="muted">
+                <ArrowLeft size={14} /> Back to project
+              </ButtonLink>
+              {chapterNum === "1" && (
+                <Link to={`/project/${id}/chapter/2`} className="ml-auto text-sm font-medium text-primary hover:underline">
+                  Next: {chapterTitle(2)}
+                </Link>
+              )}
             </div>
           </>
         )}

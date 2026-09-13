@@ -4,43 +4,53 @@
 @theme {
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  --color-background: #ffffff;
-  --color-foreground: #111111;
+  --color-background: #0e1012;
+  --color-foreground: #edf0ef;
 
-  --color-muted: #6b6b6b;
-  --color-muted-foreground: #8a8a8a;
+  --color-muted: #9aa3aa;
+  --color-muted-foreground: #6d767e;
 
-  --color-surface: #f7f7f7;
-  --color-surface-hover: #f1f1f1;
+  --color-surface: #14181c;
+  --color-surface-hover: #1b2026;
+  --color-surface-strong: #232a30;
 
-  --color-border: #e5e5e5;
+  --color-border: #22272d;
 
-  /* restrained purple accent */
-  --color-primary: #6d5ce7;
-  --color-primary-hover: #5b4bc4;
-  --color-primary-foreground: #ffffff;
-  --color-primary-soft: #f0eeff;
-  --color-primary-soft-strong: #e8e4ff;
-  --color-primary-border: #d8d2ff;
+  /* emerald accent */
+  --color-primary: #18d070;
+  --color-primary-hover: #14b860;
+  --color-primary-foreground: #04241b;
+  --color-primary-soft: #0d2b20;
+  --color-primary-soft-strong: #123a2c;
+  --color-primary-border: #1e5238;
 
-  --color-danger: #b3261e;
-  --color-success: #1a7f37;
-  --color-warning: #9a6700;
-  --color-danger-bg: #fbf1f0;
-  --color-danger-border: #ecd0cf;
-  --color-success-bg: #f0f7f1;
-  --color-success-border: #cfe6d4;
-  --color-warning-bg: #faf7ee;
-  --color-warning-border: #ecdfc2;
+  /* hero accents (Plain-style) */
+  --color-green: #18d070;
+  --color-green-hover: #14b860;
+  --color-green-ink: #04241b;
+  --color-green-soft: #0d2b20;
+  --color-green-border: #1e5238;
+  --color-night: #0e1012;
+  --color-night-surface: #14181c;
+
+  --color-danger: #ef4444;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger-bg: #2b1414;
+  --color-danger-border: #7c3c39;
+  --color-success-bg: #0e2b20;
+  --color-success-border: #2c5c45;
+  --color-warning-bg: #332a12;
+  --color-warning-border: #6a542a;
 
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
-  --shadow-md: 0 6px 20px rgb(0 0 0 / 0.06);
-  --shadow-lg: 0 16px 44px rgb(0 0 0 / 0.08);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 6px 20px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 16px 44px rgb(0 0 0 / 0.5);
 }
 
 @layer base {
@@ -53,10 +63,11 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background font-sans text-foreground;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    accent-color: var(--color-primary);
   }
 
   a {
@@ -75,52 +86,121 @@
     font-family: inherit;
   }
 
-  /* preflight normalises heading sizes — restore editorial defaults */
-  h1 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
   }
-  h2 {
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
-  }
-  h3 {
-    font-size: 1.1rem;
-    font-weight: 650;
-    letter-spacing: -0.01em;
-    line-height: 1.3;
+
+  p {
+    text-wrap: pretty;
   }
 
   ::selection {
     background: var(--color-primary);
     color: var(--color-primary-foreground);
   }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
 
+@layer utilities {
+  .dot-grid {
+    background-image: radial-gradient(circle, rgb(255 255 255 / 0.08) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.9), transparent 85%);
+  }
 
-.empty-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
+  .dot-grid-dark {
+    background-image: radial-gradient(circle, rgb(255 255 255 / 0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.9), transparent 85%);
+  }
+
+  .empty-state {
+    @apply mx-auto flex w-full max-w-md flex-col items-center px-6 py-14 text-center;
+  }
+  .empty-state-compact {
+    @apply py-10;
+  }
+  .empty-illus {
+    @apply mb-6 flex h-24 w-24 items-center justify-center;
+  }
+  .empty-illus-svg {
+    @apply h-full w-full;
+  }
+  .empty-eyebrow {
+    @apply mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted;
+  }
+  .empty-body {
+    @apply mt-2 text-sm leading-relaxed text-muted;
+  }
+  .empty-actions {
+    @apply mt-6 flex flex-wrap items-center justify-center gap-3;
+  }
+
+  .faq-item {
+    @apply overflow-hidden border border-border bg-background;
+    border-radius: var(--radius-md);
+  }
+  .faq-item summary {
+    @apply flex cursor-pointer select-none items-center justify-between gap-4 px-5 py-4 text-sm font-semibold text-foreground;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+  }
+  .faq-item summary:hover {
+    background: var(--color-surface);
+  }
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq-item summary .chevron {
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+  }
+  .faq-item[open] summary .chevron {
+    transform: rotate(180deg);
+  }
+  .faq-item[open] {
+    border-color: var(--color-primary-border);
+  }
+  .faq-item[open] summary {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .faq-body {
+    @apply px-5 pb-5 pt-2 text-sm leading-[1.75] text-muted;
+  }
+
+  .skip-link {
+    @apply sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:not-sr-only focus:rounded-md focus:border focus:border-border focus:bg-background focus:px-4 focus:py-2.5 focus:text-sm focus:font-medium focus:shadow-md;
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-background);
+  }
 }
 
-
-.empty-illus {
-  width: 128px;
-  height: 128px;
-  margin-bottom: 20px;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
-
-
-.faq-item {
-  @apply bg-background border border-border rounded-md;
-  margin-bottom: 12px;
-  overflow: hidden;
-}
-
-

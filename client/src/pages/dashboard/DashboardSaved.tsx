@@ -1,34 +1,51 @@
 import { useTopics } from "@/lib/hooks";
-import { TopicCard } from "@/components/TopicCard";
-import { Link } from "react-router-dom";
-import { Bookmark } from "lucide-react";
+import { TopicRow } from "@/components/TopicRow";
+import { EmptyState } from "@/components/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { ButtonLink } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export function DashboardSaved() {
   const { data, isLoading } = useTopics({ filter: "saved", page: 1, limit: 50 });
 
   return (
     <>
-      <div className="text-2xl font-bold tracking-[-0.02em] mb-1">Saved topics</div>
-      <p className="text-muted text-sm mb-6 max-w-[62ch] leading-[1.65]">Your collection of research topics, ready when you are.</p>
+      <PageHeader
+        title="Saved topics"
+        description="Your collection of research topics, ready when you are."
+      />
 
       {isLoading && (
-        <div className="flex justify-center p-8"><span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" /></div>
-      )}
-      {data && data.items.length === 0 && (
-        <div className="rounded-lg border border-border bg-background p-8" style={{ textAlign: "center" }}>
-          <Bookmark size={28} style={{ color: "var(--primary)", marginBottom: "0.5rem" }} />
-          <p className="text-muted text-[13px]">
-            You haven't saved any topics yet. Grab the ones you like from the chat.
-          </p>
-          <Link to="/generate-topics" className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm mt-2">
-            Generate topics
-          </Link>
+        <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-background">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className="px-4 py-4">
+              <Skeleton className="h-4 w-full max-w-md" />
+              <Skeleton className="mt-2 h-3 w-40" />
+            </div>
+          ))}
         </div>
       )}
+      {data && data.items.length === 0 && (
+        <EmptyState
+          eyebrow="Nothing saved yet"
+          title="Your saved topics will live here"
+          body="You haven't saved any topics yet. Grab the ones you like from the chat."
+          actions={
+            <ButtonLink to="/generate-topics?new=1" size="sm">Generate topics</ButtonLink>
+          }
+        />
+      )}
 
-      <div className="flex flex-col gap-3">
-        {data?.items.map((t) => <TopicCard key={t.id} topic={t} />)}
-      </div>
+      {data && data.items.length > 0 && (
+        <>
+          <p className="mb-4 text-[13px] text-muted-foreground">
+            {data.total} {data.total === 1 ? "saved topic set" : "saved topic sets"}
+          </p>
+          <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-background">
+            {data.items.map((t) => <TopicRow key={t.id} topic={t} showItems />)}
+          </div>
+        </>
+      )}
     </>
   );
 }

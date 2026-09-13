@@ -1,4 +1,4 @@
-import { NavLink, Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   History,
@@ -8,9 +8,11 @@ import {
   Settings,
   LogOut,
   PlusCircle,
-  ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { Logo } from "@/components/Logo";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { cx } from "@/lib/cx";
 
 const nav = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true },
@@ -24,12 +26,10 @@ const nav = [
 export function DashboardLayout() {
   const { user, appUser, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const name = user?.user_metadata?.full_name || appUser?.name || user?.email?.split("@")[0] || "";
-  const current = nav.find((n) =>
-    n.end ? location.pathname === n.to : location.pathname.startsWith(n.to),
-  )?.label;
+  const name =
+    user?.user_metadata?.full_name || appUser?.name || user?.email?.split("@")[0] || "Student";
+  const email = appUser?.email || user?.email || "demo@faython.local";
 
   const onLogout = async () => {
     await signOut();
@@ -37,27 +37,41 @@ export function DashboardLayout() {
   };
 
   return (
-    <div className="flex min-h-[100vh]">
-      <aside className="sticky top-0 flex h-screen w-[260px] flex-shrink-0 flex-col gap-1 overflow-y-auto border-r border-border bg-background p-4 max-lg:static max-lg:h-auto max-lg:w-full max-lg:border-r-0 max-lg:border-b max-lg:border-border max-lg:p-4">
-        <Link to="/" className="mb-6 flex items-center gap-2.5 text-base font-medium tracking-[-0.02em]">
-          <span className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-sm bg-foreground text-[14px] font-bold text-background">F</span>
-          Faython
-        </Link>
+    <div className="min-h-[100dvh] bg-surface lg:flex">
+      <a href="#dashboard-main" className="skip-link">
+        Skip to content
+      </a>
 
-        <Link to="/generate-topics" className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed w-full justify-center" style={{ marginBottom: "20px" }}>
+      <aside className="border-b border-border bg-background p-4 lg:sticky lg:top-0 lg:flex lg:h-[100dvh] lg:w-64 lg:min-h-[100dvh] lg:flex-col lg:border-b-0 lg:border-r lg:p-5">
+        <div className="flex items-center justify-between gap-3">
+          <Link to="/" aria-label="Faython home">
+            <Logo />
+          </Link>
+          <ButtonLink to="/generate-topics?new=1" size="sm" className="lg:hidden">
+            New topic
+          </ButtonLink>
+        </div>
+
+        <ButtonLink to="/generate-topics?new=1" className="mt-6 hidden w-full lg:inline-flex">
           <PlusCircle size={15} /> New topic
-        </Link>
+        </ButtonLink>
 
-        <nav className="flex flex-col gap-0.5 max-lg:flex-row max-lg:overflow-x-auto">
+        <nav
+          className="mt-5 flex gap-1 overflow-x-auto scrollbar-none lg:flex-col lg:overflow-visible"
+          aria-label="Dashboard"
+        >
           {nav.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.end}
               className={({ isActive }) =>
-                `flex items-center gap-2.5 rounded-sm p-2.5 text-sm font-medium text-muted transition-colors duration-150 hover:bg-surface hover:text-foreground${
-                  isActive ? " bg-primary-soft font-semibold text-primary" : ""
-                }`
+                cx(
+                  "flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-primary-soft text-primary"
+                    : "text-muted hover:bg-surface hover:text-foreground",
+                )
               }
             >
               <n.icon size={17} /> {n.label}
@@ -65,32 +79,27 @@ export function DashboardLayout() {
           ))}
         </nav>
 
-        <div className="mt-auto flex flex-col gap-1.5 border-t border-border pt-4">
-          <div className="px-2 pb-2 text-xs leading-[1.5] text-muted">
-            <strong>{name || "Student"}</strong>
-            <div className="text-muted">{appUser?.email || user?.email || "demo@faython.local"}</div>
-            <div className="mt-2 inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold border border-border bg-surface text-muted">Free plan</div>
+        <div className="mt-6 flex items-center justify-between gap-3 border-t border-border pt-4 lg:mt-auto">
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold text-foreground">{name}</div>
+            <div className="truncate text-xs text-muted">{email}</div>
           </div>
-          <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed w-full justify-center" onClick={onLogout}>
-            <LogOut size={15} /> Sign out
-          </button>
+          <Button
+            variant="muted"
+            size="sm"
+            onClick={onLogout}
+            className="shrink-0"
+            aria-label="Sign out"
+            title="Sign out"
+          >
+            <LogOut size={15} />
+            <span className="lg:hidden">Sign out</span>
+          </Button>
         </div>
       </aside>
 
-      <main className="flex-1 min-w-0 bg-surface">
-        <div className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-border bg-background px-8 py-3.5 max-lg:px-5">
-          <div className="flex items-center gap-2.5 text-sm font-medium text-muted">
-            <Link to="/" style={{ color: "inherit" }}>
-              Faython
-            </Link>
-            <ChevronRight size={14} style={{ color: "var(--muted-foreground)" }} />
-            <strong className="text-foreground font-medium">{current || "Dashboard"}</strong>
-          </div>
-          <Link to="/generate-topics" className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm">
-            <PlusCircle size={15} /> New topic
-          </Link>
-        </div>
-        <div className="p-8 max-w-[980px] max-lg:p-5">
+      <main id="dashboard-main" className="min-w-0 flex-1">
+        <div className="mx-auto w-full max-w-4xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
           <Outlet />
         </div>
       </main>

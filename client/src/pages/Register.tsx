@@ -4,9 +4,12 @@ import { toast } from "sonner";
 import { AuthLayout } from "@/components/AuthLayout";
 import { GoogleButton } from "@/components/GoogleButton";
 import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/Button";
+import { Field, Input } from "@/components/ui/Field";
+import { Spinner } from "@/components/ui/Spinner";
 
 export function Register() {
-  const { signUp, session, demoMode } = useAuth();
+  const { signUp, session, demoMode, configured, isGoogleConfigured } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -48,12 +51,14 @@ export function Register() {
   if (checkEmail) {
     return (
       <AuthLayout title="Confirm your email" subtitle="One more step.">
-        <div className="mb-4 rounded-md border border-success-border bg-success-bg px-4 py-3 text-[13px] text-success">
+        <div className="rounded-md border border-success-border bg-success-bg px-4 py-3.5 text-[13px] leading-relaxed text-success">
           We sent a confirmation link to <strong>{email}</strong>. Open it to activate your account,
           then sign in.
         </div>
         <p className="mt-6 text-center text-[13px] text-muted">
-          <Link to="/login" className="font-semibold text-primary underline underline-offset-[3px]">Back to sign in</Link>
+          <Link to="/login" className="font-semibold text-primary underline underline-offset-[3px]">
+            Back to sign in
+          </Link>
         </p>
       </AuthLayout>
     );
@@ -62,78 +67,98 @@ export function Register() {
   return (
     <AuthLayout title="Create your account" subtitle="Start generating research topics for free.">
       {demoMode && (
-        <div className="mb-4 flex items-start gap-2.5 rounded-md border border-warning-border bg-warning-bg px-4 py-3.5 text-sm text-warning" style={{ marginBottom: "1.25rem" }}>
-          Preview mode — Supabase isn't connected yet, so any details will create a demo account.
+        <div className="mb-5 rounded-md border border-warning-border bg-warning-bg px-4 py-3.5 text-[13px] leading-relaxed text-warning">
+          Preview build — creating an account sets up a local demo session, so treat it as a
+          sandbox. Your data won't be stored on a real server.
         </div>
       )}
-      {error && <div className="mb-4 rounded-md border border-danger-border bg-danger-bg px-4 py-3 text-[13px] text-danger">{error}</div>}
-      <form onSubmit={onSubmit}>
+      {error && (
+        <div className="mb-5 rounded-md border border-danger-border bg-danger-bg px-4 py-3 text-[13px] text-danger" role="alert">
+          {error}
+        </div>
+      )}
+      <form onSubmit={onSubmit} noValidate>
         <div className="mb-5 grid gap-1.5">
-          <label htmlFor="name" className="text-[13px] font-semibold text-foreground">Full name</label>
-          <input
-            id="name"
-            type="text"
-            autoComplete="name"
-            required
-            minLength={2}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ada Okonkwo"
-            className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
-          />
+          <Field label="Full name" htmlFor="name">
+            <Input
+              id="name"
+              type="text"
+              autoComplete="name"
+              required
+              minLength={2}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ada Okonkwo"
+            />
+          </Field>
         </div>
         <div className="mb-5 grid gap-1.5">
-          <label htmlFor="email" className="text-[13px] font-semibold text-foreground">Email</label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@university.edu"
-            className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
-          />
+          <Field label="Email" htmlFor="email">
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@university.edu"
+            />
+          </Field>
         </div>
         <div className="mb-5 grid gap-1.5">
-          <label htmlFor="password" className="text-[13px] font-semibold text-foreground">Password</label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="At least 8 characters"
-            className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
-          />
-          <span className="text-muted text-xs">Use at least 8 characters.</span>
+          <Field
+            label="Password"
+            htmlFor="password"
+            hint="Use at least 8 characters."
+          >
+            <Input
+              id="password"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
         </div>
         <div className="mb-5 grid gap-1.5">
-          <label htmlFor="confirm" className="text-[13px] font-semibold text-foreground">Confirm password</label>
-          <input
-            id="confirm"
-            type="password"
-            autoComplete="new-password"
-            required
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            placeholder="Repeat your password"
-            className="rounded-md border border-border bg-background px-3.5 py-3 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgb(109_92_231/0.12)]"
-          />
-          {confirm && password !== confirm && <span className="text-danger text-xs">Passwords do not match.</span>}
+          <Field
+            label="Confirm password"
+            htmlFor="confirm"
+            error={confirm && password !== confirm ? "Passwords do not match." : null}
+          >
+            <Input
+              id="confirm"
+              type="password"
+              autoComplete="new-password"
+              required
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+            />
+          </Field>
         </div>
-        <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed w-full justify-center" disabled={loading}>
-          {loading ? <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" /> : "Create account"}
-        </button>
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? <Spinner size={16} /> : "Create account"}
+        </Button>
       </form>
 
-      <div className="my-6 flex items-center gap-4 text-xs uppercase tracking-[0.1em] text-muted-foreground [&::before]:flex-1 [&::before]:h-px [&::before]:bg-border [&::after]:flex-1 [&::after]:h-px [&::after]:bg-border">or</div>
-      <GoogleButton />
+      {configured && isGoogleConfigured && (
+        <>
+          <div className="my-6 flex items-center gap-4 text-xs uppercase tracking-[0.1em] text-muted-foreground">
+            <span className="h-px flex-1 bg-border" />
+            or
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <GoogleButton />
+        </>
+      )}
 
       <p className="mt-6 text-center text-[13px] text-muted">
-        Already have an account? <Link to="/login" className="font-semibold text-primary underline underline-offset-[3px]">Sign in</Link>
+        Already have an account?{" "}
+        <Link to="/login" className="font-semibold text-primary underline underline-offset-[3px]">
+          Sign in
+        </Link>
       </p>
     </AuthLayout>
   );

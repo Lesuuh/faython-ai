@@ -1,239 +1,248 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { LayoutDashboard, LogOut, Menu, PlusCircle, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { Logo } from "@/components/Logo";
+import { ButtonLink } from "@/components/ui/Button";
+import { cx } from "@/lib/cx";
 
-export function Navbar() {
+export type NavbarTone = "light" | "dark";
+
+const navLinks = [
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Features", href: "/#features" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "FAQ", href: "/#faq" },
+];
+
+export function Navbar({ tone = "light" }: { tone?: NavbarTone }) {
   const { user, appUser, signOut } = useAuth();
   const navigate = useNavigate();
-
   const [menuOpen, setMenuOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
 
+  const dark = tone === "dark";
+
   const name =
-    user?.user_metadata?.full_name ||
-    appUser?.name ||
+    user?.user_metadata?.full_name?.split(" ")[0] ||
+    appUser?.name?.split(" ")[0] ||
     user?.email?.split("@")[0] ||
-    "";
+    null;
 
   const isLoggedIn = !!user;
 
   const onLogout = async () => {
     setMenuOpen(false);
     setNavOpen(false);
-
     await signOut();
     navigate("/");
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-[12px]">
-      <div className="mx-auto flex h-[68px] w-full max-w-[1200px] items-center justify-between gap-6 px-6 max-sm:px-5">
-        {/* Logo */}
-        <Link
-          to="/"
-          className="flex items-center gap-2.5 text-base font-medium tracking-[-0.02em]"
-          onClick={() => setNavOpen(false)}
-        >
-          <span className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-sm bg-foreground text-[14px] font-bold text-background">
-            F
-          </span>
-          Faython <span className="text-muted">Scholar</span>
+    <header
+      className={cx(
+        "sticky top-0 z-40 border-b backdrop-blur-[10px]",
+        dark ? "border-white/10 bg-night/80" : "border-border bg-background/90",
+      )}
+    >
+      <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center justify-between gap-6 px-5 sm:px-6">
+        <Link to="/" onClick={() => setNavOpen(false)} aria-label="Faython home">
+          <Logo tone={tone} />
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-7 text-sm font-medium text-muted md:flex">
-          <a href="/#how-it-works" className="hover:text-foreground">
-            How it works
-          </a>
-
-          <a href="/#features" className="hover:text-foreground">
-            Features
-          </a>
-
-          <a href="/#faq" className="hover:text-foreground">
-            FAQ
-          </a>
-
-          <Link to="/pricing" className="hover:text-foreground">
-            Pricing
-          </Link>
+        <nav
+          className={cx(
+            "hidden items-center gap-6 text-sm font-medium md:flex",
+            dark ? "text-white/70" : "text-muted",
+          )}
+          aria-label="Main"
+        >
+          {navLinks.map((l) => (
+            <a
+              key={l.label}
+              href={l.href}
+              className={cx(
+                "transition-colors",
+                dark ? "hover:text-white" : "hover:text-foreground",
+              )}
+            >
+              {l.label}
+            </a>
+          ))}
         </nav>
 
-        {/* Right Side */}
-        <div className="flex items-center gap-2">
-          {/* Mobile Menu Button */}
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
-            className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-sm border border-border bg-background text-foreground hover:bg-surface md:hidden"
-            onClick={() => setNavOpen((value) => !value)}
+            className={cx(
+              "inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors md:hidden",
+              dark
+                ? "border-white/15 bg-transparent text-white hover:bg-white/10"
+                : "border-border bg-background text-foreground hover:bg-surface",
+            )}
+            onClick={() => setNavOpen((v) => !v)}
             aria-label={navOpen ? "Close menu" : "Open menu"}
             aria-expanded={navOpen}
+            aria-controls="mobile-nav"
           >
             {navOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
 
-          {/* Desktop Account */}
           {isLoggedIn ? (
             <div className="relative hidden sm:block">
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-sm font-semibold text-foreground hover:bg-surface-strong"
-                onClick={() => setMenuOpen((value) => !value)}
+                className={cx(
+                  "inline-flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors",
+                  dark
+                    ? "border-white/15 bg-transparent text-white hover:bg-white/10"
+                    : "border-border bg-background text-foreground hover:bg-surface",
+                )}
+                onClick={() => setMenuOpen((v) => !v)}
                 aria-label="Account menu"
                 aria-expanded={menuOpen}
               >
-                {name.length > 24 ? `${name.slice(0, 22)}…` : name}
+                <span className="flex h-6 w-6 items-center justify-center rounded-sm bg-primary text-xs font-bold text-primary-foreground">
+                  {name?.charAt(0).toUpperCase() || "F"}
+                </span>
+                {name || user?.email}
               </button>
 
               {menuOpen && (
-                <div className="absolute right-0 top-[calc(100%+8px)] z-50 min-w-[216px] rounded-md border border-border bg-white p-1.5 shadow-lg">
-                  {/* User Info */}
-                  <div className="px-3 py-2.5">
-                    <strong className="text-sm">{name || user?.email}</strong>
-
-                    <div className="mt-0.5 text-xs text-muted">
-                      {user?.email}
-                    </div>
-                  </div>
-
-                  <div className="my-1 border-t border-border" />
-
-                  {/* Dashboard */}
+                <div
+                  className={cx(
+                    "absolute right-0 top-[calc(100%+8px)] z-50 min-w-[220px] rounded-md border p-1.5 shadow-lg",
+                    dark
+                      ? "border-white/10 bg-night-surface"
+                      : "border-border bg-background",
+                  )}
+                >
                   <Link
                     to="/dashboard"
-                    className="flex w-full items-center justify-center rounded-md px-[18px] py-3 text-sm font-medium text-muted transition-colors hover:bg-surface hover:text-foreground"
+                    className={cx(
+                      "flex items-center gap-2 rounded-md px-3 py-2.5 text-sm transition-colors",
+                      dark ? "text-white hover:bg-white/10" : "text-foreground hover:bg-surface",
+                    )}
                     onClick={() => setMenuOpen(false)}
                   >
-                    Dashboard
+                    <LayoutDashboard size={15} /> Dashboard
                   </Link>
-
-                  {/* New Topic */}
                   <Link
-                    to="/generate-topics"
-                    className="flex w-full items-center justify-center rounded-md border border-primary-border bg-primary-soft px-[18px] py-3 text-sm font-medium text-primary transition-colors hover:bg-primary-soft-strong"
+                    to="/generate-topics?new=1"
+                    className={cx(
+                      "flex items-center gap-2 rounded-md px-3 py-2.5 text-sm transition-colors",
+                      dark ? "text-white hover:bg-white/10" : "text-foreground hover:bg-surface",
+                    )}
                     onClick={() => setMenuOpen(false)}
                   >
-                    New topic
+                    <PlusCircle size={15} /> New topic
                   </Link>
-
-                  {/* Sign Out */}
+                  <div
+                    className={cx(
+                      "my-1 border-t",
+                      dark ? "border-white/10" : "border-border",
+                    )}
+                  />
                   <button
                     type="button"
-                    className="flex w-full items-center justify-center rounded-md px-[18px] py-3 text-sm font-medium text-muted transition-colors hover:bg-surface hover:text-foreground"
+                    className={cx(
+                      "flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-sm transition-colors",
+                      dark ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-muted hover:bg-surface hover:text-foreground",
+                    )}
                     onClick={onLogout}
                   >
-                    Sign out
+                    <LogOut size={15} /> Sign out
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            /* Desktop Auth Buttons */
             <div className="hidden items-center gap-2 sm:flex">
-              <Link
+              <ButtonLink
                 to="/login"
-                className="inline-flex items-center justify-center rounded-md px-[18px] py-3 text-sm font-medium text-muted transition-colors hover:bg-surface hover:text-foreground"
+                variant={dark ? "outlineOnDark" : "muted"}
+                size="sm"
               >
                 Sign in
-              </Link>
-
-              <Link
-                to="/register"
-                className="inline-flex items-center justify-center rounded-md bg-primary px-[18px] py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
-              >
+              </ButtonLink>
+              <ButtonLink to="/register" variant={dark ? "green" : "primary"} size="sm">
                 Get started
-              </Link>
+              </ButtonLink>
             </div>
           )}
         </div>
       </div>
 
-      {/* Mobile Navigation */}
       {navOpen && (
-        <div className="border-t border-border bg-white md:hidden">
-          <nav className="mx-auto flex max-w-[1200px] flex-col gap-1 px-5 py-4">
-            <a
-              href="/#how-it-works"
-              className="rounded-md px-3 py-3 text-sm font-medium text-muted hover:bg-surface hover:text-foreground"
-              onClick={() => setNavOpen(false)}
-            >
-              How it works
-            </a>
-
-            <a
-              href="/#features"
-              className="rounded-md px-3 py-3 text-sm font-medium text-muted hover:bg-surface hover:text-foreground"
-              onClick={() => setNavOpen(false)}
-            >
-              Features
-            </a>
-
-            <a
-              href="/#faq"
-              className="rounded-md px-3 py-3 text-sm font-medium text-muted hover:bg-surface hover:text-foreground"
-              onClick={() => setNavOpen(false)}
-            >
-              FAQ
-            </a>
-
-            <Link
-              to="/pricing"
-              className="rounded-md px-3 py-3 text-sm font-medium text-muted hover:bg-surface hover:text-foreground"
-              onClick={() => setNavOpen(false)}
-            >
-              Pricing
-            </Link>
-
-            <div className="my-2 border-t border-border" />
-
+        <nav
+          id="mobile-nav"
+          className={cx("border-t md:hidden", dark ? "border-white/10 bg-night" : "bg-background border-border")}
+          aria-label="Mobile"
+        >
+          <div className="mx-auto flex max-w-[1200px] flex-col gap-1 px-5 py-3">
+            {navLinks.map((l) => (
+              <a
+                key={l.label}
+                href={l.href}
+                className={cx(
+                  "rounded-md px-3 py-3 text-sm font-medium transition-colors",
+                  dark ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-muted hover:bg-surface hover:text-foreground",
+                )}
+                onClick={() => setNavOpen(false)}
+              >
+                {l.label}
+              </a>
+            ))}
+            <div className={cx("my-2 border-t", dark ? "border-white/10" : "border-border")} />
             {isLoggedIn ? (
               <>
                 <Link
                   to="/dashboard"
-                  className="rounded-md px-3 py-3 text-sm font-medium text-muted hover:bg-surface hover:text-foreground"
+                  className={cx(
+                    "rounded-md px-3 py-3 text-sm font-medium transition-colors",
+                    dark ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-muted hover:bg-surface hover:text-foreground",
+                  )}
                   onClick={() => setNavOpen(false)}
                 >
                   Dashboard
                 </Link>
-
                 <Link
-                  to="/generate-topics"
-                  className="rounded-md bg-primary-soft px-3 py-3 text-center text-sm font-medium text-primary hover:bg-primary-soft-strong"
+                  to="/generate-topics?new=1"
+                  className={cx(
+                    "rounded-md px-3 py-3 text-sm font-semibold transition-colors",
+                    dark ? "text-green hover:bg-white/10" : "text-primary hover:bg-primary-soft",
+                  )}
                   onClick={() => setNavOpen(false)}
                 >
                   New topic
                 </Link>
-
                 <button
                   type="button"
-                  className="rounded-md px-3 py-3 text-left text-sm font-medium text-muted hover:bg-surface hover:text-foreground"
+                  className={cx(
+                    "rounded-md px-3 py-3 text-left text-sm font-medium transition-colors",
+                    dark ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-muted hover:bg-surface hover:text-foreground",
+                  )}
                   onClick={onLogout}
                 >
                   Sign out
                 </button>
               </>
             ) : (
-              <>
-                <Link
+              <div className="grid grid-cols-2 gap-2 py-1">
+                <ButtonLink
                   to="/login"
-                  className="rounded-md px-3 py-3 text-sm font-medium text-muted hover:bg-surface hover:text-foreground"
+                  variant={dark ? "outlineOnDark" : "secondary"}
                   onClick={() => setNavOpen(false)}
                 >
                   Sign in
-                </Link>
-
-                <Link
-                  to="/register"
-                  className="rounded-md bg-primary px-3 py-3 text-center text-sm font-medium text-primary-foreground hover:bg-primary-hover"
-                  onClick={() => setNavOpen(false)}
-                >
+                </ButtonLink>
+                <ButtonLink to="/register" variant={dark ? "green" : "primary"} onClick={() => setNavOpen(false)}>
                   Get started
-                </Link>
-              </>
+                </ButtonLink>
+              </div>
             )}
-          </nav>
-        </div>
+          </div>
+        </nav>
       )}
     </header>
   );

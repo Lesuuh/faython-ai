@@ -1,16 +1,20 @@
 import { Link } from "react-router-dom";
+import { ArrowRight, Bookmark, FileText, History, Layers } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTopicsMeta, useTopics, useUsage } from "@/lib/hooks";
 import { useProjectProfile } from "@/lib/project-profile";
+import { FREE_CHAPTERS_PER_DAY, FREE_TOPICS_PER_DAY } from "@/lib/limits";
 import { EmptyState } from "@/components/EmptyState";
-import { History, Bookmark, Lock, ArrowRight, FileText, ChevronRight } from "lucide-react";
-
-const FREE_TOPICS_PER_DAY = 3;
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Badge } from "@/components/ui/Badge";
+import { ButtonLink } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export function DashboardHome() {
   const { user, appUser } = useAuth();
   const { data: meta } = useTopicsMeta();
-  const { data: recent } = useTopics({ page: 1, limit: 5 });
+  const { data: recent, isLoading } = useTopics({ page: 1, limit: 5 });
   const { data: usageData } = useUsage();
   const { profile } = useProjectProfile();
 
@@ -27,142 +31,101 @@ export function DashboardHome() {
 
   return (
     <>
-      <div className="text-2xl font-bold tracking-[-0.02em] mb-1">Welcome back, {displayName.split(" ")[0]}</div>
-      <p className="text-muted text-sm mb-6 max-w-[62ch] leading-[1.65]">
-        Here's your research activity at a glance. Start a project whenever you're ready.
-      </p>
+      <PageHeader
+        title={`Welcome back, ${displayName.split(" ")[0]}`}
+        description="Your research activity at a glance. Start a project whenever you're ready."
+      />
 
-      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-lg border border-border bg-background p-5">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <span className="text-muted text-xs font-medium uppercase tracking-[0.06em]">Projects</span>
-            <span className="inline-flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-sm border border-border bg-surface text-foreground">
-              <History size={15} />
-            </span>
-          </div>
-          <div className="text-[28px] font-bold tracking-[-0.03em]">{total}</div>
-        </div>
-        <div className="rounded-lg border border-border bg-background p-5">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <span className="text-muted text-xs font-medium uppercase tracking-[0.06em]">Free topics today</span>
-            <span className="inline-flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-sm border border-border bg-surface text-foreground">
-              <FileText size={15} />
-            </span>
-          </div>
-          <div className="text-[28px] font-bold tracking-[-0.03em]">
-            {usage.topics}
-            <span className="text-muted text-[13px]" style={{ fontWeight: 500 }}>
-              {" "}
-              / {FREE_TOPICS_PER_DAY}
-            </span>
-          </div>
-        </div>
-        <div className="rounded-lg border border-border bg-background p-5">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <span className="text-muted text-xs font-medium uppercase tracking-[0.06em]">Saved</span>
-            <span className="inline-flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-sm border border-border bg-surface text-foreground">
-              <Bookmark size={15} />
-            </span>
-          </div>
-          <div className="text-[28px] font-bold tracking-[-0.03em]">{saved}</div>
-        </div>
-        <div className="rounded-lg border border-border bg-background p-5">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <span className="text-muted text-xs font-medium uppercase tracking-[0.06em]">Chapters written</span>
-            <span className="inline-flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-sm border border-border bg-surface text-foreground">
-              <Lock size={15} />
-            </span>
-          </div>
-          <div className="text-[28px] font-bold tracking-[-0.03em]" style={{ fontSize: 20, letterSpacing: "-0.01em", marginTop: 8 }}>
-            Free plan
-          </div>
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Projects" value={total} icon={History} hint="Generated topic sets" />
+        <StatCard
+          label="Topics today"
+          value={`${usage.topics}/${FREE_TOPICS_PER_DAY}`}
+          icon={FileText}
+          hint="Free generations, resets daily"
+        />
+        <StatCard
+          label="Chapter One today"
+          value={`${usage.chapterOne}/${FREE_CHAPTERS_PER_DAY}`}
+          icon={Layers}
+          hint="Free generations, resets daily"
+        />
+        <StatCard label="Saved" value={saved} icon={Bookmark} hint="Topics you've bookmarked" />
       </div>
 
-      <div className="rounded-lg border border-border bg-background p-8" style={{ marginBottom: "28px" }}>
-        <div className="flex items-center gap-2.5" style={{ alignItems: "flex-start", gap: "16px" }}>
-          <span
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "var(--radius-sm)",
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <FileText size={18} />
-          </span>
-          <div style={{ flex: 1 }}>
-            <h3 style={{ marginBottom: "6px", letterSpacing: "-0.01em" }}>Ready to research?</h3>
-            <p className="text-muted text-[13px]" style={{ maxWidth: 620, marginBottom: 0 }}>
-              Say what you're interested in — or upload a photo of your assignment. Faython turns it
-              into scoped topics, writes Chapter One free, and unlocks the rest per project.
-            </p>
-          </div>
-          <Link
-            to="/generate-topics"
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed"
-            style={{ flexShrink: 0 }}
-          >
-            Start a project <ArrowRight size={15} />
-          </Link>
+      <div className="mt-6 flex flex-wrap items-center gap-4 rounded-lg border border-border bg-background p-5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-primary-border bg-primary-soft text-primary">
+          <FileText size={18} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-sm font-semibold">Ready to research?</h2>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
+            Say what you're interested in — or upload a photo of your assignment. Faython turns it
+            into scoped topics, writes Chapter One free, and unlocks the rest per project.
+          </p>
         </div>
+        <ButtonLink to="/generate-topics?new=1" className="shrink-0">
+          Start a project <ArrowRight size={15} />
+        </ButtonLink>
       </div>
 
       {chips.length > 0 && (
-        <div className="flex flex-wrap gap-2" style={{ marginBottom: "24px" }}>
+        <div className="mt-6 flex flex-wrap gap-2">
           {chips.map((c) => (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-[5px] text-xs font-medium whitespace-nowrap text-foreground" key={c}>
-              {c}
-            </span>
+            <Badge key={c}>{c}</Badge>
           ))}
         </div>
       )}
 
-      <h3 style={{ margin: "0 0 14px", letterSpacing: "-0.01em" }}>Recent activity</h3>
+      <h2 className="mb-3 mt-8 text-base font-bold tracking-[-0.02em]">Recent activity</h2>
+
+      {isLoading && (
+        <div className="grid gap-3">
+          {[1, 2, 3].map((n) => (
+            <Skeleton key={n} className="h-28 w-full" />
+          ))}
+        </div>
+      )}
+
       {recent && recent.items.length === 0 && (
         <EmptyState
           eyebrow="No activity yet"
           title="Your projects will live here"
           body="When you generate a topic set, it's saved here as a project you can reopen any time."
           actions={
-            <Link to="/generate-topics" className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm">
+            <ButtonLink to="/generate-topics?new=1" size="sm">
               Start your first project
-            </Link>
+            </ButtonLink>
           }
         />
       )}
+
       {recent && recent.items.length > 0 && (
         <div className="flex flex-col gap-3">
           {recent.items.map((t) => (
-            <div className="rounded-lg border border-border bg-background p-5 transition-[border-color,box-shadow] duration-150 hover:shadow-sm" key={t.id}>
+            <Link
+              key={t.id}
+              to={`/project/${t.id}`}
+              className="rounded-lg border border-border bg-background p-5 transition-colors hover:border-primary-border hover:bg-primary-soft/40"
+            >
               <div className="flex items-start justify-between gap-4">
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <span className="mb-2 text-xs font-medium text-muted" style={{ fontWeight: 600, color: "var(--foreground)" }}>
-                    {t.prompt.slice(0, 120)}
-                    {t.prompt.length > 120 ? "…" : ""}
-                  </span>
-                  <div className="text-sm leading-[1.7] whitespace-pre-wrap text-foreground" style={{ whiteSpace: "pre-wrap", maxHeight: 140, overflow: "hidden" }}>
-                    {t.reply.slice(0, 360)}
-                    {t.reply.length > 360 ? "\n…" : ""}
-                  </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-foreground">{t.prompt}</p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-muted">
+                    {t.reply.slice(0, 220)}
+                    {t.reply.length > 220 ? "…" : ""}
+                  </p>
                 </div>
-                <Link to={`/project/${t.id}`} className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-background text-foreground border-border hover:bg-surface disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm" style={{ flexShrink: 0 }}>
-                  Open <ChevronRight size={14} />
-                </Link>
+                <ArrowRight size={16} className="mt-1 shrink-0 text-muted" />
               </div>
-              <div className="mt-2.5 flex flex-wrap gap-2 text-xs text-muted">
-                <span className="inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold bg-primary text-primary-foreground">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Badge variant={t.chapterCount === 5 ? "primary" : "soft"}>
                   {t.chapterCount === 5 ? "Complete" : `${t.chapterCount ?? 0}/5 chapters`}
-                </span>
-                {t.level && <span className="inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold border border-border bg-surface text-muted">{t.level}</span>}
-                {t.discipline && <span className="inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold border border-border bg-surface text-muted">{t.discipline}</span>}
+                </Badge>
+                {t.level && <Badge>{t.level}</Badge>}
+                {t.discipline && <Badge>{t.discipline}</Badge>}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

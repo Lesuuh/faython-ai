@@ -181,7 +181,11 @@ export function inputTypeLabel(t: TopicInputType): string {
 }
 
 export function chapterTitle(num: number): string {
-  const fallback = ["", "Introduction", "Literature Review", "Methodology", "Results & Interpretation", "Conclusion, Summary & Recommendations"];
+  const fallback: string[] = [
+    "",
+    ...DEFAULT_CHAPTER_NAMES,
+    `Chapter ${num}`,
+  ];
   const custom = getProjectProfile().chapterNames;
   const customized = custom && custom[num - 1] && custom[num - 1] !== DEFAULT_CHAPTER_NAMES[num - 1];
   return customized ? custom[num - 1] : fallback[num] || `Chapter ${num}`;

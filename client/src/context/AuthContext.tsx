@@ -28,9 +28,38 @@ const AuthContext = createContext<AuthValue | null>(null);
 // without a real backend. It switches off automatically once Supabase envs
 // are configured, because demoMode = !supabaseConfigured.
 const DEMO_MODE = demoMode;
+export const DEMO_EMAIL = "demo@faython.local";
+export const DEMO_PASSWORD = "demo1234";
 const DEMO_ACCESS_TOKEN = "demo-access-token";
 const DEMO_USER_ID = "demo-user-0001";
-const DEMO_EMAIL = "demo@faython.local";
+const DEMO_STORAGE_KEY = "faython:demo-session";
+
+function readDemoSessionName(): string | null {
+  try {
+    const raw = window.localStorage.getItem(DEMO_STORAGE_KEY);
+    if (raw === null) return null;
+    const parsed = JSON.parse(raw) as { name?: string | null };
+    return typeof parsed.name === "string" ? parsed.name : null;
+  } catch {
+    return null;
+  }
+}
+
+function hasDemoSession(): boolean {
+  try {
+    return window.localStorage.getItem(DEMO_STORAGE_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
+function persistDemoSession(name?: string) {
+  try {
+    window.localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify({ name: name || null }));
+  } catch {
+    // storage unavailable — session stays in memory
+  }
+}
 
 function demoUser(fullName?: string): SupabaseUser {
   return {
@@ -85,6 +114,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (DEMO_MODE) {
+      if (hasDemoSession()) {
+        const name = readDemoSessionName() || undefined;
+        setSession(demoSession(name));
+        setUser(demoUser(name));
+        setAccessToken(DEMO_ACCESS_TOKEN);
+        setAppUser(demoAppUser(name));
+      } else {
+        setSession(null);
+        setUser(null);
+        setAccessToken(null);
+        setAppUser(null);
+      }
       setLoading(false);
       return;
     }
@@ -115,6 +156,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     if (DEMO_MODE) {
+      if (email.trim().toLowerCase() !== DEMO_EMAIL || password !== DEMO_PASSWORD) {
+        throw new Error("Invalid email or password");
+      }
+      persistDemoSession();
       setSession(demoSession());
       setUser(demoUser());
       setAccessToken(DEMO_ACCESS_TOKEN);
@@ -127,6 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (name: string, email: string, password: string) => {
     if (DEMO_MODE) {
+      persistDemoSession(name);
       setSession(demoSession(name));
       setUser(demoUser(name));
       setAccessToken(DEMO_ACCESS_TOKEN);
@@ -143,6 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     if (DEMO_MODE) {
+      persistDemoSession();
       setSession(demoSession());
       setUser(demoUser());
       setAccessToken(DEMO_ACCESS_TOKEN);
@@ -161,7 +208,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setUser(null);
     setAppUser(null);
-    if (!DEMO_MODE) await supabase.auth.signOut();
+    if (DEMO_MODE) {
+      try {
+        window.localStorage.removeItem(DEMO_STORAGE_KEY);
+      } catch {
+        // storage unavailable
+      }
+      return;
+    }
+    await supabase.auth.signOut();
   };
 
   const resetPassword = async (email: string) => {

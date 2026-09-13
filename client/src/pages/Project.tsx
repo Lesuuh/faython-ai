@@ -1,26 +1,23 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toast } from "sonner";
-import {
-  ArrowLeft,
-  BookOpen,
-  Lock,
-  Unlock,
-  CheckCircle2,
-  Sparkles,
-  ChevronRight,
-} from "lucide-react";
+import { BookOpen, CheckCircle2, Lock, Sparkles, Unlock } from "lucide-react";
 import {
   useTopicDetail,
   useTopicMessages,
   useInitiatePayment,
   useUsage,
   chapterTitle,
+  extractTopicItems,
 } from "@/lib/hooks";
-import { extractTopicItems } from "@/lib/hooks";
 import { useProjectProfile } from "@/lib/project-profile";
-
-const FREE_CHAPTERS_PER_DAY = 3;
+import { FREE_CHAPTERS_PER_DAY, UNLOCK_PRICE } from "@/lib/limits";
+import { ProductHeader } from "@/components/ProductHeader";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { Spinner } from "@/components/ui/Spinner";
+import { cx } from "@/lib/cx";
 
 export function Project() {
   const { id = "" } = useParams();
@@ -34,19 +31,35 @@ export function Project() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center p-8" style={{ minHeight: "60vh" }}>
-        <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-      </div>
+      <Shell>
+        <div className="space-y-4">
+          <Skeleton className="h-40 w-full" />
+          <div className="grid gap-3">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Skeleton key={n} className="h-16 w-full" />
+            ))}
+          </div>
+        </div>
+      </Shell>
     );
   }
 
   if (isError || !data) {
     return (
-      <div className="flex flex-col items-center px-4 py-12 text-center" style={{ minHeight: "60vh" }}>
-        <p className="text-[15px]">Couldn't load this project.</p>
-        <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-background text-foreground border-border hover:bg-surface disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm mt-2" onClick={() => refetch()}>Retry</button>
-        <Link to="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm mt-2">Back to dashboard</Link>
-      </div>
+      <Shell>
+        <div className="flex flex-col items-center px-4 py-16 text-center">
+          <p className="text-[15px] font-medium">Couldn't load this project.</p>
+          <p className="mt-1 text-sm text-muted">Check your connection and try again.</p>
+          <div className="mt-5 flex gap-2.5">
+            <Button variant="secondary" onClick={() => refetch()}>
+              Retry
+            </Button>
+            <ButtonLink to="/dashboard" variant="muted">
+              Back to dashboard
+            </ButtonLink>
+          </div>
+        </div>
+      </Shell>
     );
   }
 
@@ -69,148 +82,183 @@ export function Project() {
       const result = await initiate.mutateAsync(id);
       window.location.href = result.authorizationUrl;
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not start payment.");
+      toast.error(err instanceof Error ? err.message : "Could not start payment. Try again.");
       setPaying(false);
     }
   }
 
   return (
-    <div className="flex min-h-[100vh] flex-col">
-      <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-[12px]">
-        <div className="w-full max-w-[1200px] mx-auto px-6 max-sm:px-5 flex items-center justify-between gap-6 h-[68px]">
-          <Link to="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm">
-            <ArrowLeft size={15} /> Dashboard
-          </Link>
-          <Link to="/" className="mb-6 flex items-center gap-2.5 text-base font-medium tracking-[-0.02em]" style={{ margin: 0 }}>
-            <span className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-sm bg-foreground text-[14px] font-bold text-background">F</span>
-            Faython <span className="text-muted">Scholar</span>
-          </Link>
-          <span />
-        </div>
-      </header>
-
-      <main className="w-full max-w-[1200px] mx-auto px-6 max-sm:px-5" style={{ padding: "2rem 1.5rem", maxWidth: 860 }}>
-        <div className="rounded-lg border border-border bg-background p-8" style={{ marginBottom: "1.5rem" }}>
-          <div className="flex items-center gap-2.5" style={{ alignItems: "flex-start", gap: "0.75rem" }}>
-            <div className="inline-flex items-center justify-center rounded-sm border border-border bg-surface text-foreground w-10 h-10 flex-shrink-0">
-              <BookOpen size={20} />
-            </div>
-            <div className="flex-1">
-              <h2 style={{ marginBottom: "0.35rem" }}>{topic.prompt}</h2>
-              <p className="text-muted text-[13px]" style={{ marginBottom: "0.5rem" }}>
-                Level: {topic.level || "Any"} · Discipline: {topic.discipline || "Any"} · {new Date(topic.createdAt).toLocaleString()}
-              </p>
-              <div className="text-sm leading-[1.7] whitespace-pre-wrap text-foreground" style={{ whiteSpace: "pre-wrap", fontSize: "0.92rem" }}>
-                {items.length > 0
-                  ? items.map((item, i) => (
-                      <div key={i} style={{ marginBottom: "0.35rem" }}>
-                        {i + 1}. {item}
-                      </div>
-                    ))
-                  : topic.reply}
-              </div>
-              {profileChips.length > 0 && (
-                <div className="flex flex-wrap gap-2" style={{ marginTop: "14px" }}>
-                  {profileChips.map((c) => (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-[5px] text-xs font-medium whitespace-nowrap text-foreground" key={c}>
-                      {c}
-                    </span>
+    <Shell backLabel="Dashboard" backTo="/dashboard">
+      {/* Topic */}
+      <section className="card p-6 sm:p-8">
+        <div className="flex items-start gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-border bg-surface text-foreground">
+            <BookOpen size={20} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg font-bold leading-snug tracking-[-0.02em]">{topic.prompt}</h1>
+            <p className="mt-1.5 text-[13px] text-muted">
+              {topic.level || "Level: any"} · {topic.discipline || "Discipline: any"} ·{" "}
+              {new Date(topic.createdAt).toLocaleString()}
+            </p>
+            <div className="mt-4 text-sm leading-[1.7] whitespace-pre-wrap text-foreground">
+              {items.length > 0 ? (
+                <ol className="grid gap-2">
+                  {items.map((item, i) => (
+                    <li key={i} className="flex gap-2.5">
+                      <span className="tabular-nums text-muted">{i + 1}.</span>
+                      <span>{item}</span>
+                    </li>
                   ))}
-                </div>
+                </ol>
+              ) : (
+                <div>{topic.reply}</div>
               )}
             </div>
+            {profileChips.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {profileChips.map((c) => (
+                  <Badge key={c}>{c}</Badge>
+                ))}
+              </div>
+            )}
           </div>
         </div>
+      </section>
 
-        <div className="flex items-center gap-2.5" style={{ alignItems: "center", marginBottom: "0.75rem" }}>
-          <h3 style={{ margin: 0 }}>Chapters</h3>
+      {/* Chapters */}
+      <div className="mt-8 flex items-center justify-between gap-3">
+        <h2 className="text-base font-bold tracking-[-0.02em]">Chapters</h2>
+        <Badge variant={unlocked ? "primary" : "soft"}>
           {unlocked ? (
-            <span className="inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold bg-primary text-primary-foreground" style={{ marginLeft: "auto" }}>
-              Unlocked
-            </span>
+            <>
+              <Unlock size={12} /> Unlocked
+            </>
           ) : (
-            <span className="inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold border border-border bg-surface text-muted" style={{ marginLeft: "auto" }}>
-              Free · Ch.1
-            </span>
+            "Ch. 1 free"
           )}
-        </div>
+        </Badge>
+      </div>
 
-        <div className="flex flex-col gap-2.5">
-          {[1, 2, 3, 4, 5].map((num) => {
-            const ch = generatedChapters.get(num);
-            const isOne = num === 1;
-            const available = isOne || unlocked;
-            return (
+      <div className="mt-3 flex flex-col gap-2.5">
+        {[1, 2, 3, 4, 5].map((num) => {
+          const ch = generatedChapters.get(num);
+          const isOne = num === 1;
+          const available = isOne || unlocked;
+          return (
+            <div
+              key={num}
+              className={cx(
+                "flex flex-wrap items-center gap-3 rounded-lg border p-4",
+                available ? "border-border bg-background" : "border-border bg-surface",
+              )}
+            >
               <div
-                key={num}
-                className={`flex items-center gap-3.5 rounded-md border border-border p-4 transition-colors duration-150 ${available ? "bg-background" : "bg-surface opacity-85"}`}
+                className={cx(
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-[13px] font-bold",
+                  available
+                    ? "border border-primary-border bg-primary-soft text-primary"
+                    : "border border-border bg-background text-muted",
+                )}
               >
-                <div className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-sm text-[13px] font-bold ${available ? "border border-primary-border bg-primary-soft text-primary" : "border border-border bg-surface text-muted"}`}>{num}</div>
-                <div className="flex-1">
-                  <strong>{chapterTitle(num)}</strong>
-                  <div className="text-muted text-xs">
-                    {ch
-                      ? `Generated ${new Date(ch.generatedAt).toLocaleString()}`
-                      : available
-                        ? isOne
-                          ? `Free (${chapterOneRemaining} left today)`
-                          : "Unlocked — ready to generate"
-                        : "Locked · included in the one-time unlock"}
-                  </div>
+                {num}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold">{chapterTitle(num)}</div>
+                <div className="mt-0.5 text-xs text-muted">
+                  {ch
+                    ? `Generated ${new Date(ch.generatedAt).toLocaleString()}`
+                    : available
+                      ? isOne
+                        ? `Free · ${chapterOneRemaining} left today`
+                        : "Unlocked — ready to write"
+                      : "Locked · included in the one-time unlock"}
                 </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
                 {ch ? (
-                  <Link to={`/project/${id}/chapter/${num}`} className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-background text-foreground border-border hover:bg-surface disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm">
-                    <CheckCircle2 size={14} /> View <ChevronRight size={14} />
-                  </Link>
+                  <ButtonLink to={`/project/${id}/chapter/${num}`} variant="secondary" size="sm">
+                    <CheckCircle2 size={14} /> View
+                  </ButtonLink>
                 ) : available ? (
-                  <Link to={`/project/${id}/chapter/${num}`} className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm">
+                  <ButtonLink to={`/project/${id}/chapter/${num}`} size="sm">
                     <Sparkles size={14} /> {isOne ? "Generate" : "Write"}
-                  </Link>
+                  </ButtonLink>
                 ) : (
-                  <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed px-3.5 py-2 text-[13px] rounded-sm" onClick={onUnlock} disabled={paying}>
-                    {paying ? <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" /> : <Unlock size={14} />} Unlock ₦500
-                  </button>
+                  <Button size="sm" onClick={onUnlock} disabled={paying}>
+                    {paying ? <Spinner size={14} /> : <Unlock size={14} />}
+                    Unlock {UNLOCK_PRICE}
+                  </Button>
                 )}
               </div>
-            );
-          })}
-        </div>
-
-        {!unlocked && (
-          <div className="mt-5 flex items-center gap-3.5 rounded-lg border border-primary-border bg-primary-soft p-5">
-            <Lock size={16} />
-            <div className="flex-1">
-              <strong>Unlock Chapters Two to Five</strong>
-              <div className="text-muted text-[13px]">
-                One-time payment of ₦500 for this project. You'll keep everything forever.
-              </div>
             </div>
-            <button className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent px-[18px] py-3 text-sm font-medium leading-tight tracking-tight transition-[background,border-color,color,box-shadow] duration-150 whitespace-nowrap select-none bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-45 disabled:cursor-not-allowed" onClick={onUnlock} disabled={paying}>
-              {paying ? <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" /> : <Unlock size={15} />} Pay now
-            </button>
+          );
+        })}
+      </div>
+
+      {/* Unlock banner */}
+      {!unlocked && (
+        <div className="mt-6 flex flex-wrap items-center gap-4 rounded-lg border border-primary-border bg-primary-soft p-5">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-primary text-primary-foreground">
+            <Lock size={16} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold">Unlock Chapters Two to Five</div>
+            <div className="mt-0.5 text-[13px] text-muted">
+              One-time payment of {UNLOCK_PRICE} for this project. You'll keep everything forever.
+            </div>
+          </div>
+          <Button onClick={onUnlock} disabled={paying}>
+            {paying ? <Spinner size={15} /> : <Unlock size={15} />} Pay now
+          </Button>
+        </div>
+      )}
+
+      {/* Conversation */}
+      <h2 className="mt-8 text-base font-bold tracking-[-0.02em]">Conversation</h2>
+      <div className="mt-3 rounded-lg border border-border bg-background p-4 sm:p-6">
+        {messagesLoading && (
+          <div className="flex justify-center p-6">
+            <Spinner size={22} />
           </div>
         )}
+        {messagesData && messagesData.messages.length === 0 && (
+          <p className="text-sm text-muted">No saved conversation for this project.</p>
+        )}
+        {messagesData?.messages.map((m) => (
+          <div key={m.id} className="mb-2.5 rounded-md border border-border bg-surface px-4 py-3.5 text-sm leading-[1.65]">
+            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">
+              {m.role === "USER" ? "You" : "Faython"}
+            </span>
+            <span className="whitespace-pre-wrap">{m.content}</span>
+          </div>
+        ))}
+      </div>
+    </Shell>
+  );
+}
 
-        <h3 style={{ margin: "1.5rem 0 0.75rem" }}>Conversation</h3>
-        <div className="rounded-lg border border-border bg-background p-8">
-          {messagesLoading && (
-            <div className="flex justify-center p-8">
-              <span className="inline-block h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-            </div>
-          )}
-          {messagesData && messagesData.messages.length === 0 && (
-            <p className="text-muted text-[13px]">No conversation saved for this project.</p>
-          )}
-          {messagesData?.messages.map((m) => (
-            <div
-              key={m.id}
-              className="mb-2.5 grid gap-1 rounded-md border border-border bg-surface px-4 py-3.5 text-sm leading-[1.65]"
-            >
-              <span className="text-muted text-[11px] font-semibold uppercase tracking-[0.06em]">{m.role === "USER" ? "You" : "Faython"}</span>
-              <span style={{ whiteSpace: "pre-wrap" }}>{m.content}</span>
-            </div>
-          ))}
-        </div>
+function Shell({
+  children,
+  backLabel,
+  backTo,
+}: {
+  children: React.ReactNode;
+  backLabel?: string;
+  backTo?: string;
+}) {
+  return (
+    <div className="flex min-h-[100dvh] flex-col">
+      <ProductHeader
+        {...(backLabel && backTo ? { back: { to: backTo, label: backLabel } } : {})}
+        right={
+          <ButtonLink to="/generate-topics?new=1" variant="muted" size="sm" className="hidden sm:inline-flex">
+            New topic
+          </ButtonLink>
+        }
+      />
+      <main className="mx-auto w-full max-w-[860px] flex-1 px-5 py-6 sm:px-6 sm:py-8">
+        {children}
       </main>
     </div>
   );
