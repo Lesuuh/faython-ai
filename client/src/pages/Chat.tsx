@@ -104,6 +104,10 @@ export function Chat() {
     req: { mode: ChatMode; chapterNumber?: number; prompt?: string },
   ) {
     if (streamingRef.current) return;
+    if (!user) {
+      navigate("/login", { state: { from: "/" } });
+      return;
+    }
     const cost = req.mode === "topics" ? TOKEN_COSTS.topics : TOKEN_COSTS.chapter;
     const userId = user?.id ?? "guest";
     const planId = loadBilling(userId).planId;
@@ -146,7 +150,7 @@ export function Chat() {
               m.role === "assistant" && m.mode === "chapter" && m.chapterNumber !== undefined && m.content,
           )
           .map((m) => `[Chapter ${m.chapterNumber}]\n${m.content}`);
-        const profile = loadProfile();
+        const profile = loadProfile(userId);
         const contextBlock = buildResearchContext(profile);
         const prompt = contextBlock ? `${firstUser}\n\n${contextBlock}` : firstUser;
         const res = await api.generateChapter(conv.id, req.chapterNumber ?? 1, {
@@ -191,6 +195,11 @@ export function Chat() {
     if (streamingRef.current) return;
     const text = input.trim();
     if (!text) return;
+
+    if (!user) {
+      navigate("/login", { state: { from: "/" } });
+      return;
+    }
 
     if (mode === "chapter" && !active) {
       setHint(

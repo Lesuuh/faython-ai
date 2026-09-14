@@ -6,6 +6,7 @@ import {
   type ChatMessage,
   type Conversation,
 } from "@/lib/chat-store";
+import { useAuth } from "./AuthContext";
 
 type ChatContextValue = {
   conversations: Conversation[];
@@ -24,12 +25,21 @@ type ChatContextValue = {
 const ChatContext = createContext<ChatContextValue | null>(null);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
-  const [conversations, setConversations] = useState<Conversation[]>(() => loadConversations());
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const [conversations, setConversations] = useState<Conversation[]>(() =>
+    loadConversations(user?.id ?? null),
+  );
   const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
-    persistConversations(conversations);
-  }, [conversations]);
+    setConversations(loadConversations(userId));
+    setActiveId(null);
+  }, [userId]);
+
+  useEffect(() => {
+    persistConversations(userId, conversations);
+  }, [userId, conversations]);
 
   const active = conversations.find((c) => c.id === activeId) ?? null;
 

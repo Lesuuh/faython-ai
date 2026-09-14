@@ -11,17 +11,45 @@ import { ForgotPassword } from "@/pages/ForgotPassword";
 import { ResetPassword } from "@/pages/ResetPassword";
 import { VerifyEmail } from "@/pages/VerifyEmail";
 import { NotFound } from "@/pages/NotFound";
-import { PublicOnlyRoute } from "@/components/ProtectedRoute";
+import { ProtectedRoute, PublicOnlyRoute } from "@/components/ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
     element: <AppShell />,
     children: [
       { index: true, element: <Chat /> },
-      { path: "projects", element: <Projects /> },
-      { path: "files", element: <Files /> },
-      { path: "billing", element: <Billing /> },
-      { path: "settings", element: <Settings /> },
+      {
+        path: "projects",
+        element: (
+          <ProtectedRoute>
+            <Projects />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "files",
+        element: (
+          <ProtectedRoute>
+            <Files />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "billing",
+        element: (
+          <ProtectedRoute>
+            <Billing />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "settings",
+        element: (
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
   {

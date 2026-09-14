@@ -18,7 +18,33 @@ export type Conversation = {
   messages: ChatMessage[];
 };
 
-const CONVERSATIONS_KEY = "faython:conversations";
+const LEGACY_KEY = "faython:conversations";
+
+export function conversationsKey(userId: string | null): string | null {
+  return userId ? `faython:conversations:${userId}` : null;
+}
+
+function adoptLegacyIfAbsent(key: string): string | null {
+  let raw: string | null = null;
+  try {
+    raw = window.localStorage.getItem(key);
+    if (raw === null) {
+      const legacy = window.localStorage.getItem(LEGACY_KEY);
+      if (legacy !== null) {
+        try {
+          window.localStorage.setItem(key, legacy);
+          window.localStorage.removeItem(LEGACY_KEY);
+        } catch {
+          // storage unavailable — keep legacy key
+        }
+        return legacy;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return raw;
+}
 
 export function uid(): string {
   return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 9)}`;
@@ -38,9 +64,11 @@ export function slugify(text: string): string {
   return slug || "conversation";
 }
 
-export function loadConversations(): Conversation[] {
+export function loadConversations(userId: string | null): Conversation[] {
+  const key = conversationsKey(userId);
+  if (!key || !userId) return [];
+  const raw = adoptLegacyIfAbsent(key);
   try {
-    const raw = window.localStorage.getItem(CONVERSATIONS_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
@@ -57,9 +85,11 @@ export function loadConversations(): Conversation[] {
   }
 }
 
-export function persistConversations(list: Conversation[]): void {
+export function persistConversations(userId: string | null, list: Conversation[]): void {
+  const key = conversationsKey(userId);
+  if (!key || !userId) return;
   try {
-    window.localStorage.setItem(CONVERSATIONS_KEY, JSON.stringify(list));
+    window.localStorage.setItem(key, JSON.stringify(list));
   } catch {
     // storage unavailable — conversations stay in memory only
   }

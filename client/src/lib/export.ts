@@ -66,7 +66,7 @@ function latestChapters(messages: ChatMessage[]): { chapterNumber: number; conte
 
 export function exportConversationDocx(
   conversation: Conversation,
-  opts?: { record?: boolean },
+  opts?: { record?: boolean; userId?: string | null },
 ): void {
   const date = new Date(conversation.updatedAt).toLocaleString();
   const chapters = latestChapters(conversation.messages);
@@ -82,5 +82,6 @@ export function exportConversationDocx(
       }`
     : `Generated ${date} · Faython Scholar`;
   download(`${slugify(conversation.title)}.doc`, docHtml(conversation.title, meta, segments));
-  if (opts?.record !== false) recordExport(conversation.title, "conversation", conversation.id);
+  if (opts?.record !== false)
+    recordExport(opts?.userId ?? null, conversation.title, "conversation", conversation.id);
 }

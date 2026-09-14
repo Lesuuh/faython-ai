@@ -8,12 +8,40 @@ export type ExportedFile = {
   exportedAt: string;
 };
 
-const FILES_KEY = "faython:exports";
+const LEGACY_KEY = "faython:exports";
 const MAX_FILES = 50;
 
-export function loadFiles(): ExportedFile[] {
+function filesKey(userId: string | null): string | null {
+  return userId ? `faython:exports:${userId}` : null;
+}
+
+function adoptLegacyIfAbsent(key: string): string | null {
+  let raw: string | null = null;
   try {
-    const raw = window.localStorage.getItem(FILES_KEY);
+    raw = window.localStorage.getItem(key);
+    if (raw === null) {
+      const legacy = window.localStorage.getItem(LEGACY_KEY);
+      if (legacy !== null) {
+        try {
+          window.localStorage.setItem(key, legacy);
+          window.localStorage.removeItem(LEGACY_KEY);
+        } catch {
+          // storage unavailable
+        }
+        return legacy;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return raw;
+}
+
+export function loadFiles(userId: string | null): ExportedFile[] {
+  const key = filesKey(userId);
+  if (!key || !userId) return [];
+  const raw = adoptLegacyIfAbsent(key);
+  try {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
@@ -23,15 +51,22 @@ export function loadFiles(): ExportedFile[] {
   }
 }
 
-function persistFiles(list: ExportedFile[]): void {
+function persistFiles(userId: string | null, list: ExportedFile[]): void {
+  const key = filesKey(userId);
+  if (!key || !userId) return;
   try {
-    window.localStorage.setItem(FILES_KEY, JSON.stringify(list));
+    window.localStorage.setItem(key, JSON.stringify(list));
   } catch {
     // storage unavailable — export history stays in memory only
   }
 }
 
-export function recordExport(name: string, kind: "conversation" | "project", refId: string): void {
+export function recordExport(
+  userId: string | null,
+  name: string,
+  kind: "conversation" | "project",
+  refId: string,
+): void {
   const entry: ExportedFile = {
     id: uid(),
     name,
@@ -39,9 +74,9 @@ export function recordExport(name: string, kind: "conversation" | "project", ref
     refId,
     exportedAt: new Date().toISOString(),
   };
-  persistFiles([entry, ...loadFiles()].slice(0, MAX_FILES));
+  persistFiles(userId, [entry, ...loadFiles(userId)].slice(0, MAX_FILES));
 }
 
-export function deleteFile(id: string): void {
-  persistFiles(loadFiles().filter((f) => f.id !== id));
+export function deleteFile(userId: string | null, id: string): void {
+  persistFiles(userId, loadFiles(userId).filter((f) => f.id !== id));
 }

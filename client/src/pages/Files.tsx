@@ -1,34 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Download, FileText, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { useAuth } from "@/context/AuthContext";
 import { exportConversationDocx } from "@/lib/export";
 import { formatDate } from "@/lib/format";
 import { deleteFile, loadFiles, type ExportedFile } from "@/lib/file-store";
 import { loadConversations } from "@/lib/chat-store";
 
 export function Files() {
-  const [files, setFiles] = useState<ExportedFile[]>(() => loadFiles());
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const [files, setFiles] = useState<ExportedFile[]>(() => loadFiles(userId));
   const [deleteTarget, setDeleteTarget] = useState<ExportedFile | null>(null);
 
+  useEffect(() => {
+    setFiles(loadFiles(userId));
+  }, [userId]);
+
   function download(file: ExportedFile) {
-    const conv = loadConversations().find((c) => c.id === file.refId);
+    const conv = loadConversations(userId).find((c) => c.id === file.refId);
     if (!conv) {
       toast.error("Source conversation no longer exists.");
       return;
     }
-    exportConversationDocx(conv, { record: false });
+    exportConversationDocx(conv, { record: false, userId });
     toast.success("Document downloaded");
   }
 
   function handleDelete() {
     if (!deleteTarget) return;
-    deleteFile(deleteTarget.id);
+    deleteFile(userId, deleteTarget.id);
     setDeleteTarget(null);
-    setFiles(loadFiles());
+    setFiles(loadFiles(userId));
     toast.success("File removed from history");
   }
 

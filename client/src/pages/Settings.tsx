@@ -15,7 +15,8 @@ import {
 
 export function Settings() {
   const { user, appUser, loading, signOut } = useAuth();
-  const [profile, setProfile] = useState<ResearchProfile>(() => loadProfile());
+  const userId = user?.id ?? null;
+  const [profile, setProfile] = useState<ResearchProfile>(() => loadProfile(userId));
 
   const name =
     user?.user_metadata?.full_name || appUser?.name || user?.email?.split("@")[0] || "Student";
@@ -34,7 +35,7 @@ export function Settings() {
   }
 
   function handleSave() {
-    saveProfile(profile);
+    saveProfile(userId, profile);
     toast.success("Research settings saved");
   }
 

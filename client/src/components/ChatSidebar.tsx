@@ -148,7 +148,22 @@ export function ChatSidebar({
           <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Recent chats
           </p>
-          {recent.length === 0 ? (
+          {!user ? (
+            <div className="grid gap-2 px-3 py-2">
+              <p className="text-[13px] text-muted-foreground">
+                Sign in to see your saved conversations.
+              </p>
+              <ButtonLink
+                to="/login"
+                variant="secondary"
+                size="sm"
+                state={{ from: location.pathname }}
+                className="w-full"
+              >
+                Sign in
+              </ButtonLink>
+            </div>
+          ) : recent.length === 0 ? (
             <p className="px-3 py-2 text-[13px] text-muted-foreground">No conversations yet.</p>
           ) : (
             <div className="grid gap-1">

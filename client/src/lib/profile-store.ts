@@ -32,11 +32,34 @@ export const DEFAULT_PROFILE: ResearchProfile = {
   ],
 };
 
-const PROFILE_KEY = "faython:profile";
+const LEGACY_KEY = "faython:profile";
 
-export function loadProfile(): ResearchProfile {
+function profileKey(userId: string | null): string | null {
+  return userId ? `faython:profile:${userId}` : null;
+}
+
+export function loadProfile(userId: string | null): ResearchProfile {
+  const key = profileKey(userId);
+  if (!key || !userId) return DEFAULT_PROFILE;
+  let raw: string | null = null;
   try {
-    const raw = window.localStorage.getItem(PROFILE_KEY);
+    raw = window.localStorage.getItem(key);
+    if (raw === null) {
+      const legacy = window.localStorage.getItem(LEGACY_KEY);
+      if (legacy !== null) {
+        try {
+          window.localStorage.setItem(key, legacy);
+          window.localStorage.removeItem(LEGACY_KEY);
+        } catch {
+          // storage unavailable
+        }
+        raw = legacy;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  try {
     if (!raw) return DEFAULT_PROFILE;
     const parsed = JSON.parse(raw) as Partial<ResearchProfile>;
     const chapterNames =
@@ -49,9 +72,11 @@ export function loadProfile(): ResearchProfile {
   }
 }
 
-export function saveProfile(profile: ResearchProfile): void {
+export function saveProfile(userId: string | null, profile: ResearchProfile): void {
+  const key = profileKey(userId);
+  if (!key || !userId) return;
   try {
-    window.localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    window.localStorage.setItem(key, JSON.stringify(profile));
   } catch {
     // storage unavailable — profile stays in memory only
   }

@@ -8,7 +8,8 @@ import { cx } from "@/lib/cx";
 
 export function TokenChip() {
   const { user } = useAuth();
-  const userId = user?.id ?? "guest";
+  if (!user) return null;
+  const userId = user.id;
   const planId = loadBilling(userId).planId;
   const balance = useTokenBalance(userId, planId);
   const low = balance < Math.min(TOKEN_COSTS.topics, TOKEN_COSTS.chapter);

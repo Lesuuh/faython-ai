@@ -101,7 +101,11 @@ function ShellHeader({ onOpenMobile }: { onOpenMobile: () => void }) {
 
       <div className="flex shrink-0 items-center gap-2">
         {label === null && active && !editing && (
-          <Button variant="secondary" size="sm" onClick={() => exportConversationDocx(active)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => exportConversationDocx(active, { userId: user?.id })}
+          >
             <Download size={14} />
             <span className="hidden sm:inline">Export DOCX</span>
           </Button>

@@ -2,6 +2,17 @@ import { useEffect, useRef } from "react";
 import { Button } from "./Button";
 import { Spinner } from "./Spinner";
 
+interface ConfirmDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  description: string;
+  confirmLabel?: string;
+  danger?: boolean;
+  busy?: boolean;
+}
+
 export function ConfirmDialog({
   open,
   onClose,
@@ -11,45 +22,89 @@ export function ConfirmDialog({
   confirmLabel = "Confirm",
   danger = false,
   busy = false,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  description: string;
-  confirmLabel?: string;
-  danger?: boolean;
-  busy?: boolean;
-}) {
-  const ref = useRef<HTMLDialogElement>(null);
+}: ConfirmDialogProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (open && !el.open) el.showModal();
-    if (!open && el.open) el.close();
+    const dialog = dialogRef.current;
+
+    if (!dialog) return;
+
+    if (open && !dialog.open) {
+      dialog.showModal();
+    }
+
+    if (!open && dialog.open) {
+      dialog.close();
+    }
   }, [open]);
 
   return (
     <dialog
-      ref={ref}
-      onCancel={(e) => {
-        e.preventDefault();
-        onClose();
+      ref={dialogRef}
+      onCancel={(event) => {
+        event.preventDefault();
+
+        if (!busy) {
+          onClose();
+        }
       }}
       onClose={onClose}
-      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-lg border border-border bg-background p-6 shadow-lg backdrop:bg-foreground/40"
+      aria-labelledby="confirm-dialog-title"
+      aria-describedby="confirm-dialog-description"
+      className="
+        m-auto
+        w-[calc(100%-2rem)]
+        max-w-md
+        rounded-xl
+        border
+        border-border/70
+        bg-card
+        p-0
+        text-card-foreground
+        shadow-2xl
+        backdrop:bg-black/60
+        backdrop:backdrop-blur-[2px]
+      "
     >
-      <h2 className="text-lg font-bold tracking-[-0.01em]">{title}</h2>
-      <p className="mt-2 text-sm leading-relaxed text-muted">{description}</p>
-      <div className="mt-6 flex justify-end gap-2.5">
-        <Button variant="secondary" onClick={onClose} disabled={busy}>
-          Cancel
-        </Button>
-        <Button variant={danger ? "danger" : "primary"} onClick={onConfirm} disabled={busy} autoFocus>
-          {busy && <Spinner size={15} />}
-          {confirmLabel}
-        </Button>
+      <div className="p-6">
+        <div className="space-y-2">
+          <h2
+            id="confirm-dialog-title"
+            className="text-lg font-semibold tracking-tight"
+          >
+            {title}
+          </h2>
+
+          <p
+            id="confirm-dialog-description"
+            className="text-sm leading-6 text-muted-foreground"
+          >
+            {description}
+          </p>
+        </div>
+
+        <div className="mt-7 flex justify-end gap-2.5">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            disabled={busy}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            type="button"
+            variant={danger ? "danger" : "primary"}
+            onClick={onConfirm}
+            disabled={busy}
+            autoFocus
+          >
+            {busy && <Spinner size={15} />}
+            {confirmLabel}
+          </Button>
+        </div>
       </div>
     </dialog>
   );

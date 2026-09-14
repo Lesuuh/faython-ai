@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { exportConversationDocx } from "@/lib/export";
 import { formatDate } from "@/lib/format";
 import { useChat } from "@/context/ChatContext";
+import { useAuth } from "@/context/AuthContext";
 import type { Conversation } from "@/lib/chat-store";
 
 function countChapters(conv: Conversation): number {
@@ -20,6 +21,7 @@ function countChapters(conv: Conversation): number {
 
 export function Projects() {
   const { conversations, deleteConversation, renameConversation, selectConversation } = useChat();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [titleInput, setTitleInput] = useState("");
@@ -43,7 +45,7 @@ export function Projects() {
   }
 
   function exportProject(conv: Conversation) {
-    exportConversationDocx(conv);
+    exportConversationDocx(conv, { userId: user?.id });
     toast.success("Project exported as a document");
   }
 
