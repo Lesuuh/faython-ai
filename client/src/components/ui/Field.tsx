@@ -7,7 +7,7 @@ import type {
 import { cx } from "@/lib/cx";
 
 export const inputBase =
-  "w-full rounded-md border border-border bg-background px-3.5 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground focus:border-primary focus:shadow-[0_0_0_3px_rgb(24_208_112/0.16)] disabled:cursor-not-allowed disabled:bg-surface disabled:opacity-60";
+  "w-full rounded-md border border-border bg-background px-3.5 text-[15px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground focus:border-primary focus:shadow-[0_0_0_3px_rgb(157_140_255/0.18)] disabled:cursor-not-allowed disabled:bg-surface disabled:opacity-60";
 
 export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cx(inputBase, "h-11", className)} {...rest} />;

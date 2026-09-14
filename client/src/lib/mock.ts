@@ -33,14 +33,16 @@ export const demoAppUser: User = {
 };
 
 export const SAMPLE_TOPIC_REPLY = [
-  "Adoption of Electronic Banking and its Effect on Savings Behaviour of Rural Dwellers in Rivers State",
-  "The Impact of Social Media Marketing on Purchase Decisions of Small and Medium Enterprises in Port Harcourt",
-  "Determinants of Students' Academic Performance in Computer Science: A Study of Federal Universities in South-South Nigeria",
-  "Financing Agricultural Value Chains through Microfinance Institutions in Nigeria",
-  "The Role of Human Resource Planning in Reducing Employee Turnover in Manufacturing Firms in Lagos",
-  "Examining the Relationship between E-Payment Systems and Transparency in Internally Generated Revenue Collection",
-  "Work-Life Balance Practices and Organisational Commitment among Academic Staff in Nigerian Universities",
-  "Cybersecurity Awareness and Online Safety Behaviour among Undergraduate Students in Nigeria",
+  "Design and Fabrication of a Solar-Powered Water Pumping System for Rural Irrigation",
+  "Performance Evaluation of a Locally Fabricated Briquetting Machine Using Agricultural Waste",
+  "Structural Analysis and Design of a Reinforced Concrete Multi-Storey Building Using ETABS",
+  "Development of an Automated Generator Changeover System Using Microcontroller Technology",
+  "Effect of Waste Plastic as Partial Replacement of Bitumen in Flexible Pavement Construction",
+  "Design and Simulation of a Low-Cost CNC Router for Small-Scale Manufacturing",
+  "Failure Analysis of Mechanical Components in a 4.5kVA Portable Generator: A Case Study",
+  "Design and Construction of an IoT-Based Real-Time Water Quality Monitoring System",
+  "Optimization of Heat Exchanger Performance in a Small-Scale Refrigeration System",
+  "Assessment of Renewable Energy Integration for Power Supply in Off-Grid Communities in Rivers State",
 ].join("\n");
 
 function paragraph(text: string): string {
@@ -133,7 +135,8 @@ function mockTopicOne(): Topic {
   return {
     id: "demo-topic-1",
     userId: "demo-user-0001",
-    prompt: "Impact of E-Payment Systems on Small Business Performance in Port Harcourt, Rivers State.",
+    prompt:
+      "Impact of E-Payment Systems on Small Business Performance in Port Harcourt, Rivers State.",
     inputType: "TEXT",
     level: "Undergraduate",
     discipline: "Business Administration",
@@ -147,7 +150,8 @@ function mockTopicTwo(): Topic {
   return {
     id: "demo-topic-2",
     userId: "demo-user-0001",
-    prompt: "Effect of Social Media Marketing on Consumer Purchase Decisions among Young Adults in Nigeria.",
+    prompt:
+      "Effect of Social Media Marketing on Consumer Purchase Decisions among Young Adults in Nigeria.",
     inputType: "TEXT",
     level: "Undergraduate",
     discipline: "Mass Communication",
@@ -205,7 +209,10 @@ export function mockChatResult(): ChatResult {
   };
 }
 
-export function mockTopics(params: { page?: number; limit?: number }): TopicsResponse {
+export function mockTopics(params: {
+  page?: number;
+  limit?: number;
+}): TopicsResponse {
   return {
     items: MOCK_TOPICS.map((t) => ({
       ...t,
@@ -266,7 +273,10 @@ export function mockUsage(): { usage: DailyUsage } {
   return { usage: { topics: 2, chapterOne: 1 } };
 }
 
-export function mockChapterResult(topicId: string, chapterNumber: number): ChapterResult {
+export function mockChapterResult(
+  topicId: string,
+  chapterNumber: number,
+): ChapterResult {
   return {
     cached: false,
     chapter: {
@@ -314,25 +324,32 @@ export const mock = {
   me: () => later<{ user: User }>({ user: demoAppUser }, 200),
   usage: () => later<{ usage: DailyUsage }>(mockUsage(), 250),
   updateProfile: (data: { name?: string; email?: string }) =>
-    later<{ user: User }>({ user: { ...demoAppUser, ...(data.name ? { name: data.name } : {}) } }, 300),
+    later<{ user: User }>(
+      { user: { ...demoAppUser, ...(data.name ? { name: data.name } : {}) } },
+      300,
+    ),
   updateSettings: (data: { notificationsOn?: boolean }) =>
     later<{ user: User }>({ user: { ...demoAppUser, ...data } }, 300),
   deleteAccount: () => later<{ ok: boolean }>({ ok: true }, 300),
   generateTopic: () => later<ChatResult>(mockChatResult(), 900),
-  topics: (params: { page?: number; limit?: number }) => later<TopicsResponse>(mockTopics(params), 400),
+  topics: (params: { page?: number; limit?: number }) =>
+    later<TopicsResponse>(mockTopics(params), 400),
   topicsMeta: () => later<TopicsMeta>(mockTopicsMeta(), 300),
   topicDetail: (id: string) => later<TopicDetail>(mockTopicDetail(id), 400),
-  topicMessages: (id: string) => later<{ messages: Message[] }>(mockMessages(id), 300),
+  topicMessages: (id: string) =>
+    later<{ messages: Message[] }>(mockMessages(id), 300),
   setSaved: (id: string, saved: boolean) => {
     const t = MOCK_TOPICS.find((x) => x.id === id) || mockTopicOne();
     return later<{ topic: Topic }>({ topic: { ...t, saved } }, 250);
   },
   deleteTopic: () => later<{ ok: boolean }>({ ok: true }, 250),
   clearTopics: () => later<{ ok: boolean }>({ ok: true }, 250),
-  generateChapterOne: (topicId: string) => later<ChapterResult>(mockChapterResult(topicId, 1), 1200),
+  generateChapterOne: (topicId: string) =>
+    later<ChapterResult>(mockChapterResult(topicId, 1), 1200),
   generateChapter: (topicId: string, chapterNumber: number) =>
     later<ChapterResult>(mockChapterResult(topicId, chapterNumber), 1200),
-  initiatePayment: (topicId: string) => later<InitiatePaymentResult>(mockInitiatePayment(topicId), 400),
+  initiatePayment: (topicId: string) =>
+    later<InitiatePaymentResult>(mockInitiatePayment(topicId), 400),
   verifyPayment: (_reference: string) =>
     later(
       {

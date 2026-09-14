@@ -52,10 +52,11 @@ export function ButtonLink({
   className,
   children,
   to,
+  state,
   ...rest
-}: CommonProps & { to: string } & AnchorHTMLAttributes<HTMLAnchorElement>) {
+}: CommonProps & { to: string; state?: unknown } & AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
-    <Link to={to} className={cx(base, variants[variant], sizes[size], className)} {...rest}>
+    <Link to={to} state={state} className={cx(base, variants[variant], sizes[size], className)} {...rest}>
       {children}
     </Link>
   );

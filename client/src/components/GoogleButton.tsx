@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { googleIcon } from "@/components/googleIcon";
 
-export function GoogleButton() {
+export function GoogleButton({ onBeforeRedirect }: { onBeforeRedirect?: () => void }) {
   const { configured, isGoogleConfigured } = useAuth();
   const [redirecting, setRedirecting] = useState(false);
 
@@ -22,6 +22,7 @@ export function GoogleButton() {
       disabled={redirecting}
       onClick={async () => {
         setRedirecting(true);
+        onBeforeRedirect?.();
         try {
           const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",

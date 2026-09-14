@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useRef, useState, type FormEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/AuthLayout";
 import { GoogleButton } from "@/components/GoogleButton";
@@ -7,10 +7,14 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Field";
 import { Spinner } from "@/components/ui/Spinner";
+import { consumeAuthRedirect, setAuthRedirect } from "@/lib/auth-redirect";
 
 export function Register() {
   const { signUp, session, demoMode, configured, isGoogleConfigured } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,6 +22,9 @@ export function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
+
+  const from =
+    (location.state as { from?: string } | null)?.from || consumeAuthRedirect() || "/";
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -33,9 +40,9 @@ export function Register() {
     setLoading(true);
     try {
       await signUp(name, email, password);
-      if (session) {
+      if (sessionRef.current) {
         toast.success("Account created. Welcome to Faython!");
-        navigate("/dashboard", { replace: true });
+        navigate(from, { replace: true });
       } else {
         setCheckEmail(true);
         toast.success("Account created. Check your email to confirm.");
@@ -150,7 +157,7 @@ export function Register() {
             or
             <span className="h-px flex-1 bg-border" />
           </div>
-          <GoogleButton />
+          <GoogleButton onBeforeRedirect={() => setAuthRedirect(from)} />
         </>
       )}
 

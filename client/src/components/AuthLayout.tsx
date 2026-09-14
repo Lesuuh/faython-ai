@@ -15,19 +15,20 @@ export function AuthLayout({
   subtitle: string;
   features?: string[];
 }) {
-  const items =
-    features ||
-    [
-      "Scoped topic suggestions from an interest",
-      "Chapter One generation, free",
-      "Per-project chapter unlock",
-      "DOCX export of what's unlocked",
-    ];
+  const items = features || [
+    "Scoped topic suggestions from an interest",
+    "Chapter One generation, free",
+    "Per-project chapter unlock",
+    "DOCX export of what's unlocked",
+  ];
 
   return (
-    <div className="mx-auto grid min-h-screen w-full max-w-[1100px] grid-cols-1 lg:grid-cols-[5fr_6fr]">
-      <aside className="relative hidden flex-col justify-between overflow-hidden border-r border-border bg-surface px-12 py-12 lg:flex">
-        <div className="dot-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+    <div className="mx-auto grid min-h-screen w-full  grid-cols-1 lg:grid-cols-[5fr_6fr]">
+      <div className=" sm:flex items-center  relative hidden flex-col justify-center overflow-hidden border-r border-border bg-surface px-12 py-12 lg:flex">
+        <div
+          className="dot-grid pointer-events-none absolute inset-0"
+          aria-hidden="true"
+        />
         <div className="relative">
           <Link to="/" aria-label="Faython home">
             <Logo />
@@ -37,8 +38,9 @@ export function AuthLayout({
             {eyebrow || "Your final-year project, built one chapter at a time."}
           </h1>
           <p className="mb-10 mt-4 max-w-[42ch] leading-[1.7] text-muted">
-            Turn a vague interest into a scoped topic, generate your chapters with citations in your
-            chosen referencing style, and refine each one by talking to Faython.
+            Turn a vague interest into a scoped topic, generate your chapters
+            with citations in your chosen referencing style, and refine each one
+            by talking to Faython.
           </p>
 
           <ul className="grid gap-3.5">
@@ -54,9 +56,10 @@ export function AuthLayout({
         </div>
 
         <p className="relative text-xs leading-[1.6] text-muted-foreground">
-          CogniTech Integrated Solution (CIS) — Port Harcourt, Rivers State, Nigeria.
+          CogniTech Integrated Solution (CIS) — Port Harcourt, Rivers State,
+          Nigeria.
         </p>
-      </aside>
+      </div>
 
       <div className="flex items-center justify-center bg-background px-5 py-10 lg:px-12 lg:py-14">
         <div className="w-full max-w-[400px]">
@@ -66,7 +69,9 @@ export function AuthLayout({
             </Link>
           </div>
           <h2 className="text-[22px] font-bold tracking-[-0.02em]">{title}</h2>
-          <p className="mb-7 mt-1.5 text-[14px] leading-[1.6] text-muted">{subtitle}</p>
+          <p className="mb-7 mt-1.5 text-[14px] leading-[1.6] text-muted">
+            {subtitle}
+          </p>
           {children}
         </div>
       </div>

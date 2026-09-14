@@ -16,20 +16,20 @@
 
   --color-border: #22272d;
 
-  /* emerald accent */
-  --color-primary: #18d070;
-  --color-primary-hover: #14b860;
-  --color-primary-foreground: #04241b;
-  --color-primary-soft: #0d2b20;
-  --color-primary-soft-strong: #123a2c;
-  --color-primary-border: #1e5238;
+  /* restrained violet accent */
+  --color-primary: #9d8cff;
+  --color-primary-hover: #8a77fb;
+  --color-primary-foreground: #141126;
+  --color-primary-soft: #1e1938;
+  --color-primary-soft-strong: #282048;
+  --color-primary-border: #3e3568;
 
-  /* hero accents (Plain-style) */
-  --color-green: #18d070;
-  --color-green-hover: #14b860;
-  --color-green-ink: #04241b;
-  --color-green-soft: #0d2b20;
-  --color-green-border: #1e5238;
+  /* aliases */
+  --color-green: #9d8cff;
+  --color-green-hover: #8a77fb;
+  --color-green-ink: #141126;
+  --color-green-soft: #1e1938;
+  --color-green-border: #3e3568;
   --color-night: #0e1012;
   --color-night-surface: #14181c;
 
