@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Field, Input, Label, Select } from "@/components/ui/Field";
 import { useAuth } from "@/context/AuthContext";
+import { useSignOut } from "@/components/SignOutDialog";
 import {
   REFERENCING_STYLES,
   loadProfile,
@@ -14,7 +15,8 @@ import {
 } from "@/lib/profile-store";
 
 export function Settings() {
-  const { user, appUser, loading, signOut } = useAuth();
+  const { user, appUser, loading } = useAuth();
+  const { requestSignOut, signOutDialog } = useSignOut();
   const userId = user?.id ?? null;
   const [profile, setProfile] = useState<ResearchProfile>(() => loadProfile(userId));
 
@@ -132,7 +134,7 @@ export function Settings() {
                 <div className="truncate text-sm font-semibold text-foreground">{name}</div>
                 <div className="truncate text-xs text-muted">{email}</div>
               </div>
-              <Button variant="secondary" size="sm" onClick={() => void signOut()}>
+              <Button variant="secondary" size="sm" onClick={requestSignOut}>
                 <LogOut size={14} /> Sign out
               </Button>
             </div>
@@ -146,6 +148,7 @@ export function Settings() {
           )}
         </section>
       </div>
+      {signOutDialog}
     </main>
   );
 }

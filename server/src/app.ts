@@ -8,20 +8,25 @@ import { notFoundHandler, errorHandler } from "./middleware/error.js";
 
 export const app = express();
 
-app.set("trust proxy", 1);
+// app.set("trust proxy", 1);
 
-app.use(helmet());
-app.use(
-  cors({
-    origin: config.clientUrl,
-    credentials: true,
-  }),
-);
-app.use(express.json({ limit: "12mb" }));
-app.use(express.urlencoded({ extended: true }));
+// app.use(helmet());
+// app.use(
+//   cors({
+//     origin: config.clientUrl,
+//     credentials: true,
+//   }),
+// );
+
+// app.use(express.json({ limit: "12mb" }));
+// app.use(express.urlencoded({ extended: true }));
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, service: "faython-scholar", time: new Date().toISOString() });
+  res.json({
+    ok: true,
+    service: "faython-scholar",
+    time: new Date().toISOString(),
+  });
 });
 
 app.use("/api/chat", chatRoutes);

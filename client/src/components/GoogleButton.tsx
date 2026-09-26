@@ -1,18 +1,15 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { googleIcon } from "@/components/googleIcon";
 
 export function GoogleButton({ onBeforeRedirect }: { onBeforeRedirect?: () => void }) {
-  const { configured, isGoogleConfigured } = useAuth();
+  const { googleConfigured, signInWithGoogle } = useAuth();
   const [redirecting, setRedirecting] = useState(false);
 
-  const available = configured && isGoogleConfigured;
-
-  if (!available) return null;
+  if (!googleConfigured) return null;
 
   return (
     <Button
@@ -24,11 +21,7 @@ export function GoogleButton({ onBeforeRedirect }: { onBeforeRedirect?: () => vo
         setRedirecting(true);
         onBeforeRedirect?.();
         try {
-          const { error } = await supabase.auth.signInWithOAuth({
-            provider: "google",
-            options: { redirectTo: window.location.origin },
-          });
-          if (error) throw new Error(error.message);
+          await signInWithGoogle();
         } catch (err) {
           setRedirecting(false);
           toast.error(err instanceof Error ? err.message : "Google sign-in failed");

@@ -4,6 +4,7 @@ import { PlusCircle, FolderOpen, FileText, Settings, CreditCard, LogOut, X, Spar
 import { Logo } from "@/components/Logo";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useSignOut } from "@/components/SignOutDialog";
 import { cx } from "@/lib/cx";
 import type { Conversation } from "@/lib/chat-store";
 import { useAuth } from "@/context/AuthContext";
@@ -69,7 +70,8 @@ export function ChatSidebar({
 }) {
   const { conversations, activeId, selectConversation, newConversation, deleteConversation } =
     useChat();
-  const { user, appUser, loading, signOut } = useAuth();
+  const { user, appUser, loading } = useAuth();
+  const { requestSignOut, signOutDialog } = useSignOut();
   const location = useLocation();
   const navigate = useNavigate();
   const [deleteTarget, setDeleteTarget] = useState<Conversation | null>(null);
@@ -216,7 +218,7 @@ export function ChatSidebar({
                 <Button
                   variant="muted"
                   size="sm"
-                  onClick={() => void signOut()}
+                  onClick={requestSignOut}
                   aria-label="Sign out"
                   title="Sign out"
                   className="shrink-0"
@@ -247,6 +249,8 @@ export function ChatSidebar({
         confirmLabel="Delete"
         danger
       />
+
+      {signOutDialog}
     </>
   );
 }
