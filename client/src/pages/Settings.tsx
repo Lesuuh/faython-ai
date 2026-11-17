@@ -251,9 +251,8 @@ export function Settings() {
               <GroupHeading title="Application preferences" />
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Language" htmlFor="general-language">
-                  <Select id="general-language" value={settings.general.language} onChange={(event) => updateSettings("general", { language: event.target.value })}>
-                    <option>English</option>
-                  </Select>
+                  <Input id="general-language" value={settings.general.language} readOnly />
+                  <p className="mt-1.5 text-xs text-muted">English is the only interface language currently available.</p>
                 </Field>
                 <Field label="Timezone" htmlFor="general-timezone">
                   <Input id="general-timezone" value={settings.general.timezone} onChange={(event) => updateSettings("general", { timezone: event.target.value })} placeholder="Africa/Lagos" />
@@ -502,8 +501,8 @@ export function Settings() {
             <SettingsCard>
               <GroupHeading title="Legal & account" />
               <div className="flex flex-wrap gap-3 text-sm">
-                <a className="text-primary hover:underline" href="mailto:cognitechsolutions.official@gmail.com?subject=Faython%20privacy%20policy">Privacy policy</a>
-                <a className="text-primary hover:underline" href="mailto:cognitechsolutions.official@gmail.com?subject=Faython%20terms%20of%20service">Terms of service</a>
+                <a className="text-primary hover:underline" href="mailto:cognitechsolutions.official@gmail.com?subject=Request%20for%20Faython%20privacy%20policy">Request privacy policy</a>
+                <a className="text-primary hover:underline" href="mailto:cognitechsolutions.official@gmail.com?subject=Request%20for%20Faython%20terms%20of%20service">Request terms of service</a>
               </div>
               <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
                 <div><p className="text-sm font-medium text-foreground">Delete account</p><p className="text-xs text-muted">Account deletion must be handled by the identity provider.</p></div>

@@ -10,13 +10,33 @@ import {
 
 export type ProjectScope = "local" | "regional" | "national" | "international";
 
-export const SCOPE_OPTIONS: { value: ProjectScope; label: string; hint: string }[] = [
-  { value: "local", label: "Local / community", hint: "A campus, town or community" },
-  { value: "regional", label: "State / region", hint: "A state or geopolitical zone" },
+
+// scopes
+export const SCOPE_OPTIONS: {
+  value: ProjectScope;
+  label: string;
+  hint: string;
+}[] = [
+  {
+    value: "local",
+    label: "Local / community",
+    hint: "A campus, town or community",
+  },
+  {
+    value: "regional",
+    label: "State / region",
+    hint: "A state or geopolitical zone",
+  },
   { value: "national", label: "National", hint: "Country-wide data or policy" },
-  { value: "international", label: "International", hint: "Cross-border or comparative" },
+  {
+    value: "international",
+    label: "International",
+    hint: "Cross-border or comparative",
+  },
 ];
 
+
+// aceademic levels
 export const LEVEL_OPTIONS: { value: AcademicLevel; label: string }[] = [
   { value: "undergraduate", label: "Undergraduate" },
   { value: "postgraduate", label: "Postgraduate" },
@@ -94,7 +114,9 @@ export function chapterMessages(messages: ProjectMessage[]): ProjectMessage[] {
   for (const m of messages) {
     if (m.kind === "chapter" && m.chapterNumber) latest.set(m.chapterNumber, m);
   }
-  return [...latest.values()].sort((a, b) => (a.chapterNumber ?? 0) - (b.chapterNumber ?? 0));
+  return [...latest.values()].sort(
+    (a, b) => (a.chapterNumber ?? 0) - (b.chapterNumber ?? 0),
+  );
 }
 
 export type ProjectFile = {
@@ -212,7 +234,14 @@ export function createProject(input: {
     instructions: [],
     files: [],
     documents: [],
-    activity: [{ id: uid(), type: "project_created", message: "Project created", createdAt: now }],
+    activity: [
+      {
+        id: uid(),
+        type: "project_created",
+        message: "Project created",
+        createdAt: now,
+      },
+    ],
     conversations: [conversation],
     activeConversationId: conversation.id,
     createdAt: now,
@@ -271,13 +300,13 @@ export function scopeLabel(scope: ProjectScope): string {
 
 export function intakeSummary(intake: ProjectIntake): string[] {
   return [
-    intake.institution.trim(),
-    intake.department.trim(),
-    LEVEL_LABELS[intake.level],
-    intake.discipline.trim(),
-    scopeLabel(intake.scope),
-    intake.scopeNotes.trim(),
-    intake.referencingStyle.trim(),
+    intake?.institution?.trim(),
+    intake?.department?.trim(),
+    intake?.level ? LEVEL_LABELS[intake.level] : "",
+    intake?.discipline?.trim(),
+    intake?.scope ? scopeLabel(intake.scope) : "",
+    intake?.scopeNotes?.trim(),
+    intake?.referencingStyle?.trim(), 
   ].filter(Boolean);
 }
 
@@ -317,7 +346,13 @@ export function parseTopicSuggestions(text: string): TopicSuggestion[] {
 
   if (suggestions.length) return suggestions.slice(0, 8);
 
-  return [{ id: uid(), title: text.trim().slice(0, 120) || "Untitled topic", rationale: "" }];
+  return [
+    {
+      id: uid(),
+      title: text.trim().slice(0, 120) || "Untitled topic",
+      rationale: "",
+    },
+  ];
 }
 
 /* ---------------------------------- storage --------------------------------- */
@@ -339,7 +374,11 @@ function readStorage(key: string): string | null {
 function isProject(value: unknown): value is Project {
   if (!value || typeof value !== "object") return false;
   const p = value as Partial<Project>;
-  return typeof p.id === "string" && typeof p.title === "string" && Array.isArray(p.chapters);
+  return (
+    typeof p.id === "string" &&
+    typeof p.title === "string" &&
+    Array.isArray(p.chapters)
+  );
 }
 
 /** Older projects stored assistant replies without a kind; infer it on read. */
@@ -351,31 +390,37 @@ function normalizeProject(project: Project): Project {
   const legacyMessages = (project.messages ?? []).map((m) => {
     if (m.kind) return m;
     const kind: MessageKind = m.role === "user" ? "question" : "answer";
-    const chapterNumber = m.role === "assistant" ? byContent.get(m.content) : undefined;
+    const chapterNumber =
+      m.role === "assistant" ? byContent.get(m.content) : undefined;
     return { ...m, kind, ...(chapterNumber ? { chapterNumber } : {}) };
   });
 
-  const conversations = Array.isArray(project.conversations) && project.conversations.length > 0
-    ? project.conversations.map((conversation) => ({
-        ...conversation,
-        messages: (conversation.messages ?? []).map((m) => {
-          if (m.kind) return m;
-          const kind: MessageKind = m.role === "user" ? "question" : "answer";
-          const chapterNumber = m.role === "assistant" ? byContent.get(m.content) : undefined;
-          return { ...m, kind, ...(chapterNumber ? { chapterNumber } : {}) };
-        }),
-      }))
-    : [
-        {
-          id: project.activeConversationId ?? uid(),
-          title: project.title || "Project chat",
-          messages: legacyMessages,
-          createdAt: project.createdAt,
-          updatedAt: project.updatedAt,
-        },
-      ];
+  const conversations =
+    Array.isArray(project.conversations) && project.conversations.length > 0
+      ? project.conversations.map((conversation) => ({
+          ...conversation,
+          messages: (conversation.messages ?? []).map((m) => {
+            if (m.kind) return m;
+            const kind: MessageKind = m.role === "user" ? "question" : "answer";
+            const chapterNumber =
+              m.role === "assistant" ? byContent.get(m.content) : undefined;
+            return { ...m, kind, ...(chapterNumber ? { chapterNumber } : {}) };
+          }),
+        }))
+      : [
+          {
+            id: project.activeConversationId ?? uid(),
+            title: project.title || "Project chat",
+            messages: legacyMessages,
+            createdAt: project.createdAt,
+            updatedAt: project.updatedAt,
+          },
+        ];
 
-  const activeConversation = conversations.find((conversation) => conversation.id === project.activeConversationId) ?? conversations[0];
+  const activeConversation =
+    conversations.find(
+      (conversation) => conversation.id === project.activeConversationId,
+    ) ?? conversations[0];
   const nextMessages = activeConversation?.messages ?? legacyMessages;
 
   return {
@@ -415,13 +460,18 @@ export function loadProjects(userId: string | null): Project[] {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
     const storedProjects = parsed.filter(isProject).map(normalizeProject);
-    return storedProjects.length > 0 ? storedProjects : seedProjects.map(normalizeProject);
+    return storedProjects.length > 0
+      ? storedProjects
+      : seedProjects.map(normalizeProject);
   } catch {
     return seedProjects.map(normalizeProject);
   }
 }
 
-export function persistProjects(userId: string | null, projects: Project[]): void {
+export function persistProjects(
+  userId: string | null,
+  projects: Project[],
+): void {
   const key = projectsKey(userId);
   if (!key) return;
   try {
