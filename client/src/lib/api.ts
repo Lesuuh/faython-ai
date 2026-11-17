@@ -1,7 +1,7 @@
 import { getAccessToken } from "./auth-token";
 import { demoMode } from "./supabase";
 import { mock } from "./mock";
-import type { ChatResult, User } from "./types";
+import type { ProjectIntake } from "./project-store";
 
 export class ApiError extends Error {
   status: number;
@@ -41,51 +41,88 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export type ChapterContext = {
-  topicTitle?: string;
-  prompt?: string;
-  reply?: string;
-  previousChapters?: string[];
+/** All three generators resolve to generated markdown in `text`. */
+export type GeneratedText = { text: string };
+
+/**
+ * Transport failures and 5xx (server down, n8n workflow not configured, timeout)
+ * fall back to sample content so the UI stays usable. 4xx are real answers —
+ * "not enough credits", bad input, unauthorized — and are surfaced as-is.
+ */
+async function requestOrDemo<T>(
+  path: string,
+  demo: () => Promise<T>,
+  init?: RequestInit,
+): Promise<T> {
+  try {
+    return await request<T>(path, init);
+  } catch (err) {
+    if (err instanceof ApiError && err.status < 500) throw err;
+    console.warn(`[api] ${path} unavailable — serving demo data instead.`, err);
+    return demo();
+  }
+}
+
+export type ChapterRef = { number: number; title: string; content: string };
+export type MessageRef = { role: "user" | "assistant"; content: string };
+
+/** POST /api/topics — intake in, a list of scoped topic ideas out. */
+export type TopicsRequest = { intake: ProjectIntake };
+
+/** POST /api/chapters/:projectId/:chapterNumber — write or refine one chapter. */
+export type ChapterRequest = {
+  projectId: string;
+  chapterNumber: number;
+  title: string;
+  chapterTitle?: string;
+  intake: ProjectIntake;
+  previousChapters: ChapterRef[];
+  instruction?: string;
 };
 
-export type ChapterResult = {
-  chapterNumber: number;
-  content: string;
+/** POST /api/projects/ask — question answering inside a project. */
+export type AskRequest = {
+  projectId: string;
+  title: string;
+  intake: ProjectIntake;
+  chapters: ChapterRef[];
+  question: string;
+  history: MessageRef[];
 };
 
 export const api = {
-  me: () => (demoMode ? mock.me() : request<{ user: User }>("/api/user/me")),
+  me: () =>
+    demoMode
+      ? mock.me()
+      : requestOrDemo("/api/user/me", () => mock.me()),
 
-  // chat
-  generateTopic: (input: { prompt?: string; file?: File; level?: string; discipline?: string }) => {
-    if (demoMode) return mock.generateTopic();
-    if (input.file) {
-      const form = new FormData();
-      if (input.prompt) form.append("prompt", input.prompt);
-      if (input.level) form.append("level", input.level);
-      if (input.discipline) form.append("discipline", input.discipline);
-      form.append("file", input.file);
-      return request<ChatResult>("/api/chat", { method: "POST", body: form });
-    }
-    return request<ChatResult>("/api/chat", {
-      method: "POST",
-      body: JSON.stringify({
-        prompt: input.prompt,
-        level: input.level,
-        discipline: input.discipline,
-      }),
-    });
+  generateTopics(input: TopicsRequest): Promise<GeneratedText> {
+    if (demoMode) return mock.generateTopics().then((text) => ({ text }));
+    return requestOrDemo(
+      "/api/topics",
+      () => mock.generateTopics().then((text) => ({ text })),
+      { method: "POST", body: JSON.stringify(input) },
+    );
   },
 
-  // chapters
-  generateChapter: async (topicId: string, chapterNumber: number, context?: ChapterContext) => {
+  generateChapter(input: ChapterRequest): Promise<GeneratedText> {
+    const { projectId, chapterNumber, ...context } = input;
     if (demoMode) {
-      const r = await mock.generateChapter(topicId, chapterNumber);
-      return { chapterNumber, content: r.chapter.content };
+      return mock.generateChapter(chapterNumber).then((text) => ({ text }));
     }
-    return request<ChapterResult>(`/api/chapters/${topicId}/${chapterNumber}`, {
-      method: "POST",
-      body: JSON.stringify(context ?? {}),
-    });
+    return requestOrDemo(
+      `/api/chapters/${encodeURIComponent(projectId)}/${chapterNumber}`,
+      () => mock.generateChapter(chapterNumber).then((text) => ({ text })),
+      { method: "POST", body: JSON.stringify(context) },
+    );
+  },
+
+  askProject(input: AskRequest): Promise<GeneratedText> {
+    if (demoMode) return mock.askProject(input.question).then((text) => ({ text }));
+    return requestOrDemo(
+      "/api/projects/ask",
+      () => mock.askProject(input.question).then((text) => ({ text })),
+      { method: "POST", body: JSON.stringify(input) },
+    );
   },
 };

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { uid } from "./chat-store";
+import { uid } from "./ids";
 import type { PlanId } from "./pricing";
 import { planById } from "./pricing";
 
 export type TokenEntryType = "grant" | "topup" | "usage";
-export type TokenEntryKind = "topics" | "chapter" | "plan" | "topup";
+export type TokenEntryKind = "topics" | "chapter" | "ask" | "plan" | "topup";
 
 export type TokenEntry = {
   id: string;

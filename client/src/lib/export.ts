@@ -1,5 +1,4 @@
-import type { ChatMessage, Conversation } from "./chat-store";
-import { slugify } from "./chat-store";
+import { generatedChapters, projectFileName, type Project } from "./project-store";
 import { recordExport } from "./file-store";
 
 function esc(text: string): string {
@@ -52,36 +51,34 @@ function download(filename: string, html: string): void {
   URL.revokeObjectURL(url);
 }
 
-function latestChapters(messages: ChatMessage[]): { chapterNumber: number; content: string }[] {
-  const byNumber = new Map<number, string>();
-  for (const m of messages) {
-    if (m.role === "assistant" && m.mode === "chapter" && m.chapterNumber && m.content) {
-      byNumber.set(m.chapterNumber, m.content);
-    }
-  }
-  return [...byNumber.entries()]
-    .map(([chapterNumber, content]) => ({ chapterNumber, content }))
-    .sort((a, b) => a.chapterNumber - b.chapterNumber);
-}
-
-export function exportConversationDocx(
-  conversation: Conversation,
+export function exportProjectDocx(
+  project: Project,
   opts?: { record?: boolean; userId?: string | null },
 ): void {
-  const date = new Date(conversation.updatedAt).toLocaleString();
-  const chapters = latestChapters(conversation.messages);
+  const date = new Date(project.updatedAt).toLocaleString();
+  const chapters = generatedChapters(project);
+  const intake = [
+    project.intake.institution,
+    project.intake.department,
+    project.intake.discipline,
+  ]
+    .map((v) => v.trim())
+    .filter(Boolean)
+    .join(" · ");
+
   const segments = chapters.length
-    ? chapters.map((c) => ({ title: `Chapter ${c.chapterNumber}`, body: c.content }))
-    : conversation.messages.map((m) => ({
-        title: m.role === "user" ? "User" : "Faython Scholar",
-        body: m.content,
-      }));
-  const meta = chapters.length
-    ? `Generated ${date} · Faython Scholar · ${chapters.length} ${
-        chapters.length === 1 ? "chapter" : "chapters"
-      }`
-    : `Generated ${date} · Faython Scholar`;
-  download(`${slugify(conversation.title)}.doc`, docHtml(conversation.title, meta, segments));
-  if (opts?.record !== false)
-    recordExport(opts?.userId ?? null, conversation.title, "conversation", conversation.id);
+    ? chapters.map((c) => ({ title: `Chapter ${c.number}: ${c.title}`, body: c.content }))
+    : [{ title: "Chapters", body: "No chapters have been generated for this project yet." }];
+
+  const meta = [
+    intake,
+    `Generated ${date} · Faython Scholar · ${chapters.length} ${
+      chapters.length === 1 ? "chapter" : "chapters"
+    }`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  download(`${projectFileName(project)}.doc`, docHtml(project.title, meta, segments));
+  if (opts?.record !== false) recordExport(opts?.userId ?? null, project.title, "project", project.id);
 }

@@ -9,6 +9,7 @@ export const config = {
   n8n: {
     topicsWebhookUrl: process.env.N8N_TOPICS_WEBHOOK_URL || "",
     chapterWebhookUrl: process.env.N8N_CHAPTER_WEBHOOK_URL || "",
+    chatWebhookUrl: process.env.N8N_CHAT_WEBHOOK_URL || "",
     webhookSecret: process.env.N8N_WEBHOOK_SECRET || "",
     timeoutMs: Number(process.env.N8N_TIMEOUT_MS || 90_000),
   },

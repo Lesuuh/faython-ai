@@ -5,53 +5,48 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { exportConversationDocx } from "@/lib/export";
+import { exportProjectDocx } from "@/lib/export";
 import { formatDate } from "@/lib/format";
-import { useChat } from "@/context/ChatContext";
+import { useProject } from "@/context/ProjectContext";
 import { useAuth } from "@/context/AuthContext";
-import type { Conversation } from "@/lib/chat-store";
+import { intakeSummary, type Project } from "@/lib/project-store";
 
-function countChapters(conv: Conversation): number {
-  const numbers = new Set<number>();
-  for (const m of conv.messages) {
-    if (m.role === "assistant" && m.mode === "chapter" && m.chapterNumber) numbers.add(m.chapterNumber);
-  }
-  return numbers.size;
+function chapterCount(project: Project): number {
+  return project.chapters.filter((c) => c.state === "done" && c.content).length;
 }
 
 export function Projects() {
-  const { conversations, deleteConversation, renameConversation, selectConversation } = useChat();
+  const { projects, deleteProject, renameProject } = useProject();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [titleInput, setTitleInput] = useState("");
-  const [deleteTarget, setDeleteTarget] = useState<Conversation | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
 
-  const sorted = [...conversations].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const sorted = [...projects].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
-  function startRename(conv: Conversation) {
-    setEditingId(conv.id);
-    setTitleInput(conv.title);
+  function startRename(project: Project) {
+    setEditingId(project.id);
+    setTitleInput(project.title);
   }
 
   function saveRename(id: string) {
-    renameConversation(id, titleInput);
+    renameProject(id, titleInput);
     setEditingId(null);
   }
 
-  function openProject(conv: Conversation) {
-    selectConversation(conv.id);
-    navigate("/");
+  function openChapters(project: Project) {
+    navigate(`/projects/${project.id}`);
   }
 
-  function exportProject(conv: Conversation) {
-    exportConversationDocx(conv, { userId: user?.id });
+  function exportProject(project: Project) {
+    exportProjectDocx(project, { userId: user?.id });
     toast.success("Project exported as a document");
   }
 
   function handleDelete() {
     if (!deleteTarget) return;
-    deleteConversation(deleteTarget.id);
+    deleteProject(deleteTarget.id);
     setDeleteTarget(null);
     toast.success("Project deleted");
   }
@@ -61,7 +56,12 @@ export function Projects() {
       <div className="mx-auto w-full max-w-[720px] px-5 py-8 sm:px-6 lg:px-8">
         <PageHeader
           title="My Projects"
-          description="Every conversation is a project. Open it in the chat to keep working, or export it as a document."
+          description="Each project holds its topic, its intake details and the chapters you've generated."
+          actions={
+            <ButtonLink to="/new" variant="primary" size="sm">
+              New project
+            </ButtonLink>
+          }
         />
 
         {sorted.length === 0 ? (
@@ -71,21 +71,22 @@ export function Projects() {
             </span>
             <h2 className="mt-5 text-lg font-bold tracking-[-0.01em]">No projects yet</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Start a conversation in the chat — that becomes your project. Topics and chapters you
-              generate are saved there automatically.
+              Answer a few questions about your department and Faython will propose scoped topics
+              for you to choose from.
             </p>
-            <ButtonLink to="/" variant="primary" className="mt-6">
+            <ButtonLink to="/new" variant="primary" className="mt-6">
               Start a project
             </ButtonLink>
           </div>
         ) : (
           <div className="grid gap-2.5">
-            {sorted.map((conv) => {
-              const editing = editingId === conv.id;
-              const chapterCount = countChapters(conv);
+            {sorted.map((project) => {
+              const editing = editingId === project.id;
+              const done = chapterCount(project);
+              const summary = intakeSummary(project.intake).slice(0, 3).join(" · ");
               return (
                 <div
-                  key={conv.id}
+                  key={project.id}
                   className="rounded-xl border border-border bg-surface p-4 sm:p-5"
                 >
                   <div className="flex items-center justify-between gap-4">
@@ -94,7 +95,7 @@ export function Projects() {
                         <form
                           onSubmit={(e) => {
                             e.preventDefault();
-                            saveRename(conv.id);
+                            saveRename(project.id);
                           }}
                           className="flex items-center gap-2"
                         >
@@ -105,7 +106,7 @@ export function Projects() {
                             className="h-9 w-full max-w-[280px] rounded-md border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
                             aria-label="Project title"
                           />
-                          <Button size="sm" variant="secondary" onClick={() => saveRename(conv.id)}>
+                          <Button size="sm" variant="secondary" onClick={() => saveRename(project.id)}>
                             <Check size={14} />
                           </Button>
                           <Button
@@ -120,28 +121,27 @@ export function Projects() {
                       ) : (
                         <button
                           type="button"
-                          onClick={() => openProject(conv)}
+                          onClick={() => openChapters(project)}
                           className="block max-w-full truncate text-left text-[15px] font-semibold text-foreground transition-colors hover:text-primary"
                         >
-                          {conv.title}
+                          {project.title}
                         </button>
                       )}
-                      <p className="mt-1 text-xs text-muted">
-                        {chapterCount} chapter{chapterCount === 1 ? "" : "s"} ·{" "}
-                        {conv.messages.length} message{conv.messages.length === 1 ? "" : "s"} ·
-                        updated {formatDate(conv.updatedAt)}
+                      {summary && <p className="mt-1 truncate text-xs text-muted">{summary}</p>}
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {done} chapter{done === 1 ? "" : "s"} · updated {formatDate(project.updatedAt)}
                       </p>
                     </div>
 
                     {!editing && (
                       <div className="flex shrink-0 items-center gap-1.5">
-                        <Button size="sm" variant="muted" onClick={() => startRename(conv)} title="Rename">
+                        <Button size="sm" variant="muted" onClick={() => startRename(project)} title="Rename">
                           <Pencil size={14} />
                         </Button>
                         <Button
                           size="sm"
                           variant="muted"
-                          onClick={() => exportProject(conv)}
+                          onClick={() => exportProject(project)}
                           title="Export DOCX"
                         >
                           <Download size={14} />
@@ -149,7 +149,7 @@ export function Projects() {
                         <Button
                           size="sm"
                           variant="muted"
-                          onClick={() => setDeleteTarget(conv)}
+                          onClick={() => setDeleteTarget(project)}
                           title="Delete project"
                         >
                           <Trash2 size={14} />

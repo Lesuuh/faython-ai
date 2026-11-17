@@ -1,4 +1,4 @@
-import { uid } from "./chat-store";
+import { uid } from "./ids";
 
 export type ExportedFile = {
   id: string;

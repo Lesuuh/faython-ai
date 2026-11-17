@@ -51,6 +51,7 @@ export const PLANS: Plan[] = [
 export const TOKEN_COSTS = {
   topics: 300,
   chapter: 1_200,
+  ask: 200,
 } as const;
 
 export function planById(id: PlanId): Plan {

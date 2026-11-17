@@ -1,7 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { AuthFrame } from "@/components/AuthFrame";
-import { Chat } from "@/pages/Chat";
+import { Home } from "@/pages/Home";
+import { NewProject } from "@/pages/NewProject";
+import { ProjectDetail } from "@/pages/ProjectDetail";
 import { Projects } from "@/pages/Projects";
 import { Files } from "@/pages/Files";
 import { Settings } from "@/pages/Settings";
@@ -10,6 +12,8 @@ import { Login } from "@/pages/Login";
 import { NotFound } from "@/pages/NotFound";
 import { ProtectedRoute, PublicOnlyRoute } from "@/components/ProtectedRoute";
 
+const protectedPage = (element: React.ReactNode) => <ProtectedRoute>{element}</ProtectedRoute>;
+
 export const router = createBrowserRouter([
   {
     element: <AuthFrame />,
@@ -17,39 +21,13 @@ export const router = createBrowserRouter([
       {
         element: <AppShell />,
         children: [
-          { index: true, element: <Chat /> },
-          {
-            path: "projects",
-            element: (
-              <ProtectedRoute>
-                <Projects />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: "files",
-            element: (
-              <ProtectedRoute>
-                <Files />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: "billing",
-            element: (
-              <ProtectedRoute>
-                <Billing />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: "settings",
-            element: (
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            ),
-          },
+          { index: true, element: <Home /> },
+          { path: "new", element: protectedPage(<NewProject />) },
+          { path: "projects", element: protectedPage(<Projects />) },
+          { path: "projects/:projectId", element: protectedPage(<ProjectDetail />) },
+          { path: "files", element: protectedPage(<Files />) },
+          { path: "billing", element: protectedPage(<Billing />) },
+          { path: "settings", element: protectedPage(<Settings />) },
         ],
       },
       {

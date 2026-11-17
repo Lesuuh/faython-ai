@@ -6,9 +6,9 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useSignOut } from "@/components/SignOutDialog";
 import { cx } from "@/lib/cx";
-import type { Conversation } from "@/lib/chat-store";
+import type { Project } from "@/lib/project-store";
 import { useAuth } from "@/context/AuthContext";
-import { useChat } from "@/context/ChatContext";
+import { useProject } from "@/context/ProjectContext";
 
 const itemBase =
   "flex w-full items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium transition-colors";
@@ -68,34 +68,32 @@ export function ChatSidebar({
   mobileOpen: boolean;
   onCloseMobile: () => void;
 }) {
-  const { conversations, activeId, selectConversation, newConversation, deleteConversation } =
-    useChat();
+  const { projects, activeId, selectProject, deleteProject } = useProject();
   const { user, appUser, loading } = useAuth();
   const { requestSignOut, signOutDialog } = useSignOut();
   const location = useLocation();
   const navigate = useNavigate();
-  const [deleteTarget, setDeleteTarget] = useState<Conversation | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
 
-  const recent = [...conversations].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-  const startActive = location.pathname === "/" && !activeId;
+  const recent = [...projects].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const startActive = location.pathname === "/new";
   const name =
     user?.user_metadata?.full_name || appUser?.name || user?.email?.split("@")[0] || "Student";
   const email = appUser?.email || user?.email || "";
 
   function handleStartNew() {
-    newConversation();
-    navigate("/");
+    navigate("/new");
     onCloseMobile();
   }
 
   function handleSelect(id: string) {
-    selectConversation(id);
-    navigate("/");
+    selectProject(id);
+    navigate(`/projects/${id}`);
     onCloseMobile();
   }
 
   function handleDelete(id: string) {
-    deleteConversation(id);
+    deleteProject(id);
     setDeleteTarget(null);
   }
 
@@ -148,12 +146,12 @@ export function ChatSidebar({
 
         <div className="mt-5 min-h-0 flex-1 overflow-y-auto overflow-x-hidden border-t border-border px-3 pt-4">
           <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Recent chats
+            Recent projects
           </p>
           {!user ? (
             <div className="grid gap-2 px-3 py-2">
               <p className="text-[13px] text-muted-foreground">
-                Sign in to see your saved conversations.
+                Sign in to see your projects.
               </p>
               <ButtonLink
                 to="/login"
@@ -166,7 +164,7 @@ export function ChatSidebar({
               </ButtonLink>
             </div>
           ) : recent.length === 0 ? (
-            <p className="px-3 py-2 text-[13px] text-muted-foreground">No conversations yet.</p>
+            <p className="px-3 py-2 text-[13px] text-muted-foreground">No projects yet.</p>
           ) : (
             <div className="grid gap-1">
               {recent.map((c) => {
@@ -193,8 +191,8 @@ export function ChatSidebar({
                     <button
                       type="button"
                       onClick={() => setDeleteTarget(c)}
-                      aria-label="Delete chat"
-                      title="Delete chat"
+                      aria-label="Delete project"
+                      title="Delete project"
                       className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
                     >
                       <X size={14} />
@@ -244,8 +242,8 @@ export function ChatSidebar({
         open={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
-        title="Delete conversation?"
-        description="This deletes the conversation and all of its messages. This action can't be undone."
+        title="Delete project?"
+        description="This deletes the project, its chapters and the whole conversation. This action can't be undone."
         confirmLabel="Delete"
         danger
       />

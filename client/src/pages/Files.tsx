@@ -6,10 +6,10 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useAuth } from "@/context/AuthContext";
-import { exportConversationDocx } from "@/lib/export";
+import { exportProjectDocx } from "@/lib/export";
 import { formatDate } from "@/lib/format";
 import { deleteFile, loadFiles, type ExportedFile } from "@/lib/file-store";
-import { loadConversations } from "@/lib/chat-store";
+import { loadProjects } from "@/lib/project-store";
 
 export function Files() {
   const { user } = useAuth();
@@ -22,12 +22,12 @@ export function Files() {
   }, [userId]);
 
   function download(file: ExportedFile) {
-    const conv = loadConversations(userId).find((c) => c.id === file.refId);
-    if (!conv) {
-      toast.error("Source conversation no longer exists.");
+    const project = loadProjects(userId).find((p) => p.id === file.refId);
+    if (!project) {
+      toast.error("Source project no longer exists.");
       return;
     }
-    exportConversationDocx(conv, { record: false, userId });
+    exportProjectDocx(project, { record: false, userId });
     toast.success("Document downloaded");
   }
 
@@ -54,10 +54,10 @@ export function Files() {
             </span>
             <h2 className="mt-5 text-lg font-bold tracking-[-0.01em]">No documents yet</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Export a project from the chat header and it will show up here.
+              Export a project from its thread and it will show up here.
             </p>
-            <ButtonLink to="/" variant="primary" className="mt-6">
-              Back to chat
+            <ButtonLink to="/projects" variant="primary" className="mt-6">
+              Go to my projects
             </ButtonLink>
           </div>
         ) : (

@@ -1,4 +1,4 @@
-import { uid } from "./chat-store";
+import { uid } from "./ids";
 import type { PlanId } from "./pricing";
 
 export type BillStatus = "pending" | "success" | "failed";

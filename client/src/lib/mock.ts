@@ -331,7 +331,14 @@ export const mock = {
   updateSettings: (data: { notificationsOn?: boolean }) =>
     later<{ user: User }>({ user: { ...demoAppUser, ...data } }, 300),
   deleteAccount: () => later<{ ok: boolean }>({ ok: true }, 300),
-  generateTopic: () => later<ChatResult>(mockChatResult(), 900),
+  generateTopics: () => later<string>(SAMPLE_TOPIC_REPLY, 900),
+  generateChapter: (chapterNumber: number) =>
+    later<string>(MOCK_CHAPTERS[chapterNumber] || MOCK_CHAPTERS[1], 1200),
+  askProject: (question: string) =>
+    later<string>(
+      `**On "${question.trim()}"**\n\nBased on the scope you captured for this project, I'd keep the population tight and the variables measurable. Two options:\n\n1. **Narrow study** — one campus, one department, one semester of data. Fastest to collect, easiest to defend in Chapter Three.\n2. **Wider study** — three departments across the institution. Stronger generalisability, but you'll need a larger sample and a longer instrument.\n\nFor an undergraduate project, go with the first. Say the word and I'll fold the choice into the next chapter.`,
+      800,
+    ),
   topics: (params: { page?: number; limit?: number }) =>
     later<TopicsResponse>(mockTopics(params), 400),
   topicsMeta: () => later<TopicsMeta>(mockTopicsMeta(), 300),
@@ -346,8 +353,6 @@ export const mock = {
   clearTopics: () => later<{ ok: boolean }>({ ok: true }, 250),
   generateChapterOne: (topicId: string) =>
     later<ChapterResult>(mockChapterResult(topicId, 1), 1200),
-  generateChapter: (topicId: string, chapterNumber: number) =>
-    later<ChapterResult>(mockChapterResult(topicId, chapterNumber), 1200),
   initiatePayment: (topicId: string) =>
     later<InitiatePaymentResult>(mockInitiatePayment(topicId), 400),
   verifyPayment: (_reference: string) =>

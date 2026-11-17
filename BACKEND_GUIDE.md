@@ -160,7 +160,7 @@ Apply it in `app.ts`:
 
 ```ts
 // Before the protected routes
-app.use("/api/chat", requireAuth, chatRoutes);
+app.use("/api/topics", requireAuth, topicsRoutes);
 app.use("/api/chapters", requireAuth, chaptersRoutes);
 ```
 

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Download, Menu, Pencil } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { ChatProvider, useChat } from "@/context/ChatContext";
-import { exportConversationDocx } from "@/lib/export";
+import { ProjectProvider, useProject } from "@/context/ProjectContext";
+import { exportProjectDocx } from "@/lib/export";
 import { Logo } from "@/components/Logo";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ChatSidebar } from "@/components/ChatSidebar";
@@ -11,6 +11,8 @@ import { TokenChip } from "@/components/TokenChip";
 
 function headerTitle(pathname: string): string | null {
   if (pathname === "/") return null;
+  if (pathname === "/new") return "New Project";
+  if (pathname.startsWith("/projects/")) return "Project";
   if (pathname === "/projects") return "My Projects";
   if (pathname === "/files") return "Files & Documents";
   if (pathname === "/billing") return "Billing & Tokens";
@@ -19,13 +21,14 @@ function headerTitle(pathname: string): string | null {
 }
 
 function ShellHeader({ onOpenMobile }: { onOpenMobile: () => void }) {
-  const { active, renameConversation } = useChat();
+  const { active, renameProject } = useProject();
   const { user, loading } = useAuth();
   const location = useLocation();
   const [editing, setEditing] = useState(false);
   const [titleInput, setTitleInput] = useState("");
 
   const label = headerTitle(location.pathname);
+  const onThread = label === null && location.pathname !== "/";
 
   function startEdit() {
     if (!active) return;
@@ -34,7 +37,7 @@ function ShellHeader({ onOpenMobile }: { onOpenMobile: () => void }) {
   }
 
   function saveTitle() {
-    if (active && titleInput.trim()) renameConversation(active.id, titleInput);
+    if (active && titleInput.trim()) renameProject(active.id, titleInput);
     setEditing(false);
   }
 
@@ -52,7 +55,7 @@ function ShellHeader({ onOpenMobile }: { onOpenMobile: () => void }) {
 
         {label ? (
           <span className="truncate text-[15px] font-semibold text-foreground">{label}</span>
-        ) : active ? (
+        ) : onThread && active ? (
           editing ? (
             <form
               onSubmit={(e) => {
@@ -100,11 +103,11 @@ function ShellHeader({ onOpenMobile }: { onOpenMobile: () => void }) {
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        {label === null && active && !editing && (
+        {onThread && active && !editing && (
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => exportConversationDocx(active, { userId: user?.id })}
+            onClick={() => exportProjectDocx(active, { userId: user?.id })}
           >
             <Download size={14} />
             <span className="hidden sm:inline">Export DOCX</span>
@@ -130,7 +133,7 @@ export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <ChatProvider>
+    <ProjectProvider>
       <div className="flex h-[100dvh] min-h-[520px] flex-col bg-background lg:flex-row">
         <ChatSidebar mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} />
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -138,6 +141,6 @@ export function AppShell() {
           <Outlet />
         </div>
       </div>
-    </ChatProvider>
+    </ProjectProvider>
   );
 }

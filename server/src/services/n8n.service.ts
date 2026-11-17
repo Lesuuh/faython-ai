@@ -1,16 +1,8 @@
 import { config } from "../config/index.js";
 import { serverError } from "../lib/errors.js";
 
-type N8nEnvelope = {
-  ok?: boolean;
-  success?: boolean;
-  data?: unknown;
-  reply?: unknown;
-  output?: unknown;
-  error?: string;
-};
-
-export type TopicGenInput = {
+/** Payload the topics workflow expects. */
+export type TopicsPayload = {
   action: "topics";
   prompt: string;
   imageDataUrl?: string;
@@ -18,7 +10,8 @@ export type TopicGenInput = {
   discipline?: string;
 };
 
-export type ChapterGenInput = {
+/** Payload the chapter workflow expects. `topicId` is the caller's conversation id. */
+export type ChapterPayload = {
   action: "chapter";
   topicId: string;
   chapterNumber: number;
@@ -28,21 +21,47 @@ export type ChapterGenInput = {
   previousChapters: string[];
 };
 
+/** Payload the project Q&A workflow expects. */
+export type ChatPayload = {
+  action: "chat";
+  topicId: string;
+  topicTitle: string;
+  prompt: string;
+};
+
+type N8nEnvelope = {
+  data?: unknown;
+  reply?: unknown;
+  output?: unknown;
+  error?: string;
+};
+
 function pickResult(json: N8nEnvelope): string | null {
-  for (const key of ["reply", "output", "data"]) {
-    const v = json[key as keyof N8nEnvelope];
-    if (typeof v === "string" && v.trim()) return v.trim();
+  for (const key of ["reply", "output", "data"] as const) {
+    const value = json[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
   }
   return null;
 }
 
-async function callN8n(input: TopicGenInput | ChapterGenInput): Promise<string> {
-  const isTopics = input.action === "topics";
-  const url = isTopics ? config.n8n.topicsWebhookUrl : config.n8n.chapterWebhookUrl;
+const WEBHOOK_ENV: Record<TopicsPayload["action"] | ChapterPayload["action"] | ChatPayload["action"], string> = {
+  topics: "N8N_TOPICS_WEBHOOK_URL",
+  chapter: "N8N_CHAPTER_WEBHOOK_URL",
+  chat: "N8N_CHAT_WEBHOOK_URL",
+};
+
+function webhookUrl(action: keyof typeof WEBHOOK_ENV): string {
+  return {
+    topics: config.n8n.topicsWebhookUrl,
+    chapter: config.n8n.chapterWebhookUrl,
+    chat: config.n8n.chatWebhookUrl,
+  }[action];
+}
+
+async function callN8n(payload: TopicsPayload | ChapterPayload | ChatPayload): Promise<string> {
+  const url = webhookUrl(payload.action);
   if (!url) {
-    throw serverError(
-      `n8n is not configured (set N8N_${isTopics ? "TOPICS" : "CHAPTER"}_WEBHOOK_URL)`,
-    );
+    throw serverError(`n8n is not configured (set ${WEBHOOK_ENV[payload.action]})`);
   }
 
   const controller = new AbortController();
@@ -53,11 +72,9 @@ async function callN8n(input: TopicGenInput | ChapterGenInput): Promise<string> 
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(config.n8n.webhookSecret
-          ? { "X-Faython-Secret": config.n8n.webhookSecret }
-          : {}),
+        ...(config.n8n.webhookSecret ? { "X-Faython-Secret": config.n8n.webhookSecret } : {}),
       },
-      body: JSON.stringify(input),
+      body: JSON.stringify(payload),
       signal: controller.signal,
     });
 
@@ -79,7 +96,9 @@ async function callN8n(input: TopicGenInput | ChapterGenInput): Promise<string> 
       } catch {
         // keep raw
       }
-      throw serverError(`Generation workflow failed (${res.status}): ${detail || raw.slice(0, 200)}`);
+      throw serverError(
+        `Generation workflow failed (${res.status}): ${detail || raw.slice(0, 200)}`,
+      );
     }
 
     let json: N8nEnvelope;
@@ -91,9 +110,9 @@ async function callN8n(input: TopicGenInput | ChapterGenInput): Promise<string> 
       throw serverError("Generation workflow returned an empty response.");
     }
 
-    const reply = pickResult(json) ?? (typeof json.error === "string" ? json.error : null);
-    if (!reply) throw serverError("Generation workflow returned an empty response.");
-    return reply;
+    const result = pickResult(json) ?? (typeof json.error === "string" ? json.error : null);
+    if (!result) throw serverError("Generation workflow returned an empty response.");
+    return result;
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
       throw serverError("Generation workflow timed out — please try again.");
@@ -105,7 +124,11 @@ async function callN8n(input: TopicGenInput | ChapterGenInput): Promise<string> 
 }
 
 export const n8n = {
-  async generateTopics(prompt: string, opts?: { imageDataUrl?: string; level?: string; discipline?: string }) {
+  /** Topic ideas from an interest. */
+  generateTopics(
+    prompt: string,
+    opts?: { imageDataUrl?: string; level?: string; discipline?: string },
+  ): Promise<string> {
     return callN8n({
       action: "topics",
       prompt,
@@ -115,14 +138,13 @@ export const n8n = {
     });
   },
 
-  async generateChapter(input: {
-    topicId: string;
-    chapterNumber: number;
-    topicTitle: string;
-    prompt: string;
-    reply: string;
-    previousChapters: string[];
-  }) {
+  /** One chapter, written in the context of its project. */
+  generateChapter(input: Omit<ChapterPayload, "action">): Promise<string> {
     return callN8n({ action: "chapter", ...input });
+  },
+
+  /** Ask a question about a project. */
+  generateChat(input: Omit<ChatPayload, "action">): Promise<string> {
+    return callN8n({ action: "chat", ...input });
   },
 };
