@@ -7,13 +7,13 @@ import { exportProjectDocx } from "@/lib/export";
 import { Logo } from "@/components/Logo";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ChatSidebar } from "@/components/ChatSidebar";
-import { TokenChip } from "@/components/TokenChip";
 
 function headerTitle(pathname: string): string | null {
   if (pathname === "/") return null;
   if (pathname === "/new") return "New Project";
   if (pathname.startsWith("/projects/")) return "Project";
   if (pathname === "/projects") return "My Projects";
+  if (pathname === "/search") return "Search";
   if (pathname === "/files") return "Files & Documents";
   if (pathname === "/billing") return "Billing & Tokens";
   if (pathname === "/settings") return "Settings";
@@ -113,7 +113,6 @@ function ShellHeader({ onOpenMobile }: { onOpenMobile: () => void }) {
             <span className="hidden sm:inline">Export DOCX</span>
           </Button>
         )}
-        {!loading && <TokenChip />}
         {!loading && !user && (
           <ButtonLink
             to="/login"

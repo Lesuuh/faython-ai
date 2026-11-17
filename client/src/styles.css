@@ -54,6 +54,68 @@
 }
 
 @layer base {
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --color-background: #f8f9fb;
+    --color-foreground: #20232a;
+    --color-muted: #5e6874;
+    --color-muted-foreground: #7b8490;
+    --color-surface: #ffffff;
+    --color-surface-hover: #f2f4f7;
+    --color-surface-strong: #e9edf2;
+    --color-border: #e1e5eb;
+    --color-primary: #6554c0;
+    --color-primary-hover: #5746b0;
+    --color-primary-foreground: #ffffff;
+    --color-primary-soft: #efedfb;
+    --color-primary-soft-strong: #e4e0fa;
+    --color-primary-border: #d3cdf5;
+    --color-danger-bg: #fff0ef;
+    --color-danger-border: #f4c8c4;
+    --color-success-bg: #eaf8f0;
+    --color-success-border: #b7e5c9;
+    --color-warning-bg: #fff7e6;
+    --color-warning-border: #f2d89d;
+    --color-night: #f8f9fb;
+    --color-night-surface: #ffffff;
+    --shadow-sm: 0 1px 2px rgb(20 30 50 / 0.06);
+    --shadow-md: 0 6px 20px rgb(20 30 50 / 0.1);
+    --shadow-lg: 0 16px 44px rgb(20 30 50 / 0.14);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root[data-theme="system"] {
+      color-scheme: light;
+      --color-background: #f8f9fb;
+      --color-foreground: #20232a;
+      --color-muted: #5e6874;
+      --color-muted-foreground: #7b8490;
+      --color-surface: #ffffff;
+      --color-surface-hover: #f2f4f7;
+      --color-surface-strong: #e9edf2;
+      --color-border: #e1e5eb;
+      --color-primary: #6554c0;
+      --color-primary-hover: #5746b0;
+      --color-primary-foreground: #ffffff;
+      --color-primary-soft: #efedfb;
+      --color-primary-soft-strong: #e4e0fa;
+      --color-primary-border: #d3cdf5;
+      --color-danger-bg: #fff0ef;
+      --color-danger-border: #f4c8c4;
+      --color-success-bg: #eaf8f0;
+      --color-success-border: #b7e5c9;
+      --color-warning-bg: #fff7e6;
+      --color-warning-border: #f2d89d;
+      --color-night: #f8f9fb;
+      --color-night-surface: #ffffff;
+      --shadow-sm: 0 1px 2px rgb(20 30 50 / 0.06);
+      --shadow-md: 0 6px 20px rgb(20 30 50 / 0.1);
+      --shadow-lg: 0 16px 44px rgb(20 30 50 / 0.14);
+    }
+  }
+}
+
+@layer base {
   * {
     box-sizing: border-box;
   }

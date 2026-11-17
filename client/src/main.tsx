@@ -5,7 +5,10 @@ import { RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
 import { router } from "./router";
 import { AuthProvider } from "./context/AuthContext";
+import { applyTheme, loadAppSettings } from "./lib/settings-store";
 import "./styles.css";
+
+applyTheme(loadAppSettings().general.theme);
 
 const queryClient = new QueryClient({
   defaultOptions: {

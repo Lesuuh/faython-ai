@@ -2,6 +2,7 @@ import { api, type ChapterRef, type MessageRef } from "@/lib/api";
 import { TOKEN_COSTS, type PlanId } from "@/lib/pricing";
 import { loadBilling } from "@/lib/billing-store";
 import { canAfford } from "@/lib/token-store";
+import { loadAppSettings } from "@/lib/settings-store";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -44,6 +45,32 @@ function messageRefs(messages: ProjectMessage[]): MessageRef[] {
     .map((m) => ({ role: m.role, content: m.content }));
 }
 
+function withGlobalWritingDefaults(project: Project): Project {
+  const defaults = loadAppSettings().personalization;
+  const lines = [
+    `Writing language: ${defaults.writingLanguage}.`,
+    `Academic tone: ${defaults.tone}.`,
+    `Writing level: ${defaults.writingLevel}.`,
+    `Response length: ${defaults.responseLength}.`,
+    defaults.preferences.trim(),
+    "These are global defaults; follow project-specific instructions or constraints when they differ.",
+  ].filter(Boolean);
+
+  return {
+    ...project,
+    intake: {
+      ...project.intake,
+      referencingStyle: project.intake.referencingStyle || defaults.referencingStyle,
+      constraints: [
+        project.intake.constraints.trim(),
+        `Global writing defaults:\n${lines.join("\n")}`,
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
+    },
+  };
+}
+
 /** Step 2 of the wizard: turn an intake into selectable topic ideas. */
 export async function generateTopicIdeas(intake: ProjectIntake): Promise<TopicSuggestion[]> {
   const { text } = await api.generateTopics({ intake });
@@ -57,12 +84,13 @@ export async function generateProjectChapter(
   opts?: { instruction?: string },
 ): Promise<string> {
   const chapter = project.chapters.find((c) => c.number === chapterNumber);
+  const contextualProject = withGlobalWritingDefaults(project);
   const { text } = await api.generateChapter({
     projectId: project.id,
     chapterNumber,
     title: project.title,
     chapterTitle: chapter?.title,
-    intake: project.intake,
+    intake: contextualProject.intake,
     previousChapters: chapterRefs(project),
     instruction: opts?.instruction ?? chapter?.instruction ?? "",
   });
@@ -79,10 +107,11 @@ export async function askProject(
   question: string,
   history?: ProjectMessage[],
 ): Promise<string> {
+  const contextualProject = withGlobalWritingDefaults(project);
   const { text } = await api.askProject({
     projectId: project.id,
     title: project.title,
-    intake: project.intake,
+    intake: contextualProject.intake,
     chapters: chapterRefs(project),
     question,
     history: messageRefs(history ?? project.messages),

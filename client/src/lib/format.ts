@@ -1,11 +1,13 @@
+import { dateFormatOptions, loadAppSettings } from "./settings-store";
+
 export function formatDate(iso: string): string {
   try {
-    return new Date(iso).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    const settings = loadAppSettings().general;
+    return new Intl.DateTimeFormat(settings.language, {
+      ...dateFormatOptions(settings.dateFormat),
+      timeZone: settings.timezone,
+    }).format(new Date(iso));
   } catch {
-    return "";
+    return new Date(iso).toLocaleDateString();
   }
 }

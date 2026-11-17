@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, FolderOpen, MessageSquare, Sparkles } from "lucide-react";
+import { ArrowRight, Clock3, FileText, FolderOpen, Plus, Sparkles } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
 import { useProject } from "@/context/ProjectContext";
-import { chapterMessages, intakeSummary, scopeLabel } from "@/lib/project-store";
+import { loadAppSettings } from "@/lib/settings-store";
 import { cx } from "@/lib/cx";
 
 function relativeDate(iso: string): string {
@@ -23,93 +23,100 @@ export function Home() {
   const { user, appUser } = useAuth();
   const { projects } = useProject();
 
-  const name = user?.user_metadata?.full_name || appUser?.name || "";
+  const name =
+    loadAppSettings().general.displayName ||
+    user?.user_metadata?.full_name ||
+    appUser?.name ||
+    "";
   const first = name.trim().split(" ")[0];
-  const recent = [...projects].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6);
+  const recent = [...projects]
+    .filter((project) => project.status !== "archived")
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .slice(0, 4);
 
   return (
     <main className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto w-full max-w-[860px] px-5 py-10 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-bold tracking-[-0.02em] text-foreground">
-          {first ? `Welcome back, ${first}` : "Welcome to Faython Scholar"}
-        </h1>
-        <p className="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-muted">
-          Every project is its own conversation. Set up the topic once, then write chapters and
-          ask questions in the same thread.
-        </p>
-
-        <div className="mt-6 flex flex-wrap items-center gap-2.5">
-          <ButtonLink to="/new" size="lg">
-            Start a new project <ArrowRight size={16} />
+      <div className="mx-auto flex w-full max-w-[900px] flex-col px-5 py-10 sm:px-6 sm:py-14 lg:px-8">
+        <section className="mx-auto flex w-full max-w-[640px] flex-col items-center py-8 text-center sm:py-14">
+          <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary-border bg-primary-soft text-primary">
+            <Sparkles size={21} />
+          </span>
+          <p className="mt-5 text-sm font-medium text-muted">
+            {first ? `Welcome back, ${first}` : "Your academic research workspace"}
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-[-0.035em] text-foreground sm:text-4xl">
+            What are you researching?
+          </h1>
+          <p className="mt-3 max-w-[48ch] text-[15px] leading-relaxed text-muted">
+            Start a research project with Faython. Develop your topic, explore ideas and work on
+            your chapters at your own pace.
+          </p>
+          <ButtonLink to="/new" size="lg" className="mt-7">
+            <Plus size={17} /> Start a project
           </ButtonLink>
-          <ButtonLink to="/projects" variant="muted" size="lg">
-            <FolderOpen size={16} /> My Projects
-          </ButtonLink>
-        </div>
+          <Link
+            to="/projects"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
+          >
+            <FolderOpen size={15} /> Browse all projects
+          </Link>
+        </section>
 
-        {recent.length > 0 ? (
-          <section className="mt-10">
-            <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Jump back in
-            </h2>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {recent.map((p) => {
-                const written = chapterMessages(p.messages).length;
-                const total = p.chapters.length;
-                const summary = intakeSummary(p.intake);
-                return (
-                  <Link
-                    key={p.id}
-                    to={`/projects/${p.id}`}
-                    className={cx(
-                      "group flex flex-col rounded-xl border border-border bg-surface p-4 transition-colors",
-                      "hover:border-primary-border hover:bg-primary-soft/40",
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">
-                        {p.title}
-                      </h3>
-                      <ArrowRight
-                        size={15}
-                        className="mt-0.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
-                      />
-                    </div>
-
-                    {summary.length > 0 && (
-                      <p className="mt-1.5 line-clamp-1 text-[13px] text-muted">
-                        {scopeLabel(p.intake.scope)} · {summary[0] || p.intake.discipline}
-                      </p>
-                    )}
-
-                    <div className="mt-3 flex items-center gap-3 text-[12px] text-muted-foreground">
-                      <span className="inline-flex items-center gap-1.5">
-                        <MessageSquare size={13} /> {p.messages.length} message
-                        {p.messages.length === 1 ? "" : "s"}
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <Sparkles size={13} /> {written}/{total} chapters
-                      </span>
-                      <span className="ml-auto">{relativeDate(p.updatedAt)}</span>
-                    </div>
-                  </Link>
-                );
-              })}
+        <section className="mt-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-foreground">Recent projects</h2>
+              <p className="mt-1 text-sm text-muted">Pick up where you left off.</p>
             </div>
-          </section>
-        ) : (
-          <div className="mt-10 rounded-xl border border-dashed border-border px-5 py-10 text-center">
-            <Sparkles size={20} className="mx-auto text-muted-foreground" />
-            <p className="mt-3 text-[15px] font-semibold text-foreground">No projects yet</p>
-            <p className="mx-auto mt-1.5 max-w-[48ch] text-[13px] leading-relaxed text-muted">
-              Start a new project, answer a few questions about your scope, and Faython will
-              propose topics you can build on.
-            </p>
-            <ButtonLink to="/new" variant="secondary" className="mt-5">
-              Start a new project
-            </ButtonLink>
+            {projects.length > 0 && (
+              <ButtonLink to="/projects" variant="muted" size="sm">
+                View all <ArrowRight size={14} />
+              </ButtonLink>
+            )}
           </div>
-        )}
+
+          {recent.length ? (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {recent.map((project) => (
+                <Link
+                  key={project.id}
+                  to={`/projects/${project.id}`}
+                  className={cx(
+                    "group flex min-h-[112px] flex-col justify-between rounded-xl border border-border bg-surface p-4 transition-colors",
+                    "hover:border-primary-border hover:bg-primary-soft/30",
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+                      {project.title}
+                    </h3>
+                    <ArrowRight
+                      size={15}
+                      className="mt-0.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+                    />
+                  </div>
+                  <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5">
+                      <FileText size={13} />
+                      {project.documents?.length ?? 0} documents
+                    </span>
+                    <span className="ml-auto inline-flex items-center gap-1.5">
+                      <Clock3 size={13} />
+                      {relativeDate(project.updatedAt)}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4 rounded-xl border border-dashed border-border px-5 py-8 text-center">
+              <p className="text-sm font-medium text-foreground">Your projects will appear here</p>
+              <p className="mt-1 text-sm text-muted">
+                Create a project to keep your research and conversations together.
+              </p>
+            </div>
+          )}
+        </section>
       </div>
     </main>
   );

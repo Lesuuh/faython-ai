@@ -1,4 +1,7 @@
+import seededProjects from "@/data/data.js";
 import { uid, slugify } from "./ids";
+
+const seedProjects = seededProjects as Project[];
 import {
   DEFAULT_PROFILE,
   type AcademicLevel,
@@ -94,13 +97,72 @@ export function chapterMessages(messages: ProjectMessage[]): ProjectMessage[] {
   return [...latest.values()].sort((a, b) => (a.chapterNumber ?? 0) - (b.chapterNumber ?? 0));
 }
 
+export type ProjectFile = {
+  id: string;
+  name: string;
+  type: string;
+  size: string;
+  uploadedAt: string;
+  isDummy?: boolean;
+};
+
+export type ProjectInstruction = {
+  id: string;
+  text: string;
+  updatedAt: string;
+};
+
+export type ProjectConversation = {
+  id: string;
+  title: string;
+  messages: ProjectMessage[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ResearchDocument = {
+  id: string;
+  title: string;
+  type: string;
+  content: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  wordCount?: number;
+  sourceConversationId?: string;
+  sourceChapterNumber?: number;
+};
+
+export type ProjectActivity = {
+  id: string;
+  type: string;
+  message: string;
+  createdAt: string;
+};
+
 export type Project = {
   id: string;
   title: string;
+  description?: string;
+  researchTopic?: string;
+  institution?: string;
+  department?: string;
+  course?: string;
+  academicLevel?: string;
+  academicSession?: string;
+  referencingStyle?: string;
+  supervisor?: string;
+  status?: "active" | "archived";
   intake: ProjectIntake;
   suggestions: TopicSuggestion[];
   chapters: ProjectChapter[];
   messages: ProjectMessage[];
+  instructions?: ProjectInstruction[];
+  files?: ProjectFile[];
+  documents?: ResearchDocument[];
+  activity?: ProjectActivity[];
+  conversations?: ProjectConversation[];
+  activeConversationId?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -125,16 +187,68 @@ export function createProject(input: {
   chapterNames?: string[];
 }): Project {
   const now = new Date().toISOString();
-  return {
+  const conversation = {
     id: uid(),
     title: input.title.trim(),
-    intake: input.intake,
-    suggestions: input.suggestions,
-    chapters: blankChapters(input.chapterNames),
     messages: [],
     createdAt: now,
     updatedAt: now,
   };
+
+  return {
+    id: uid(),
+    title: input.title.trim(),
+    description: "",
+    researchTopic: input.intake.keywords || input.intake.discipline,
+    institution: input.intake.institution,
+    department: input.intake.department,
+    academicLevel: input.intake.level,
+    referencingStyle: input.intake.referencingStyle,
+    status: "active",
+    intake: input.intake,
+    suggestions: input.suggestions,
+    chapters: blankChapters(input.chapterNames),
+    messages: [],
+    instructions: [],
+    files: [],
+    documents: [],
+    activity: [{ id: uid(), type: "project_created", message: "Project created", createdAt: now }],
+    conversations: [conversation],
+    activeConversationId: conversation.id,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+export function buildProjectContext(project: Project): string {
+  const instructionText = (project.instructions ?? [])
+    .map((instruction) => instruction.text.trim())
+    .filter(Boolean)
+    .join("\n- ");
+
+  const documentTitles = (project.documents ?? [])
+    .map((document) => document.title)
+    .filter(Boolean)
+    .slice(0, 6)
+    .join(", ");
+
+  const fileNames = (project.files ?? [])
+    .map((file) => file.name)
+    .filter(Boolean)
+    .slice(0, 6)
+    .join(", ");
+
+  return [
+    `Project: ${project.title}`,
+    `Research topic: ${project.researchTopic || project.intake.discipline || "Not specified"}`,
+    `Institution: ${project.institution || project.intake.institution || "Not specified"}`,
+    `Department: ${project.department || project.intake.department || "Not specified"}`,
+    `Academic level: ${project.academicLevel || LEVEL_LABELS[project.intake.level] || "Not specified"}`,
+    `Referencing style: ${project.referencingStyle || project.intake.referencingStyle || "Not specified"}`,
+    `Project instructions: ${instructionText || "No project instructions saved."}`,
+    `Relevant files: ${fileNames || "No uploaded files yet."}`,
+    `Saved documents: ${documentTitles || "No saved documents yet."}`,
+  ].join("\n");
 }
 
 const SCOPE_LABELS: Record<ProjectScope, string> = {
@@ -234,20 +348,53 @@ function normalizeProject(project: Project): Project {
     project.chapters.filter((c) => c.content).map((c) => [c.content, c.number]),
   );
 
+  const legacyMessages = (project.messages ?? []).map((m) => {
+    if (m.kind) return m;
+    const kind: MessageKind = m.role === "user" ? "question" : "answer";
+    const chapterNumber = m.role === "assistant" ? byContent.get(m.content) : undefined;
+    return { ...m, kind, ...(chapterNumber ? { chapterNumber } : {}) };
+  });
+
+  const conversations = Array.isArray(project.conversations) && project.conversations.length > 0
+    ? project.conversations.map((conversation) => ({
+        ...conversation,
+        messages: (conversation.messages ?? []).map((m) => {
+          if (m.kind) return m;
+          const kind: MessageKind = m.role === "user" ? "question" : "answer";
+          const chapterNumber = m.role === "assistant" ? byContent.get(m.content) : undefined;
+          return { ...m, kind, ...(chapterNumber ? { chapterNumber } : {}) };
+        }),
+      }))
+    : [
+        {
+          id: project.activeConversationId ?? uid(),
+          title: project.title || "Project chat",
+          messages: legacyMessages,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
+        },
+      ];
+
+  const activeConversation = conversations.find((conversation) => conversation.id === project.activeConversationId) ?? conversations[0];
+  const nextMessages = activeConversation?.messages ?? legacyMessages;
+
   return {
     ...project,
-    messages: (project.messages ?? []).map((m) => {
-      if (m.kind) return m;
-      const kind: MessageKind = m.role === "user" ? "question" : "answer";
-      const chapterNumber = m.role === "assistant" ? byContent.get(m.content) : undefined;
-      return { ...m, kind, ...(chapterNumber ? { chapterNumber } : {}) };
-    }),
+    description: project.description ?? "",
+    status: project.status ?? "active",
+    instructions: project.instructions ?? [],
+    files: project.files ?? [],
+    documents: project.documents ?? [],
+    activity: project.activity ?? [],
+    conversations,
+    activeConversationId: activeConversation?.id ?? null,
+    messages: nextMessages,
   };
 }
 
 export function loadProjects(userId: string | null): Project[] {
   const key = projectsKey(userId);
-  if (!key) return [];
+  if (!key) return seedProjects.map(normalizeProject);
 
   let raw = readStorage(key);
   if (raw === null) {
@@ -262,14 +409,15 @@ export function loadProjects(userId: string | null): Project[] {
       raw = legacy;
     }
   }
-  if (!raw) return [];
+  if (!raw) return seedProjects.map(normalizeProject);
 
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isProject).map(normalizeProject);
+    const storedProjects = parsed.filter(isProject).map(normalizeProject);
+    return storedProjects.length > 0 ? storedProjects : seedProjects.map(normalizeProject);
   } catch {
-    return [];
+    return seedProjects.map(normalizeProject);
   }
 }
 
