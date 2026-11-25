@@ -228,15 +228,15 @@ export function Settings() {
   const plan = planById(billing.planId);
   const tokenAccount = getTokenAccount(billingUserId, billing.planId);
   const monthlyUsage = tokenAccount.consumedThisPeriod;
-  const providers = useMemo(() => {
-    const list = user?.app_metadata?.providers;
-    if (Array.isArray(list))
-      return list.filter(
-        (provider): provider is string => typeof provider === "string",
-      );
-    const provider = user?.app_metadata?.provider;
-    return typeof provider === "string" ? [provider] : [];
-  }, [user]);
+  // const providers = useMemo(() => {
+  //   const list = user?.app_metadata?.providers;
+  //   if (Array.isArray(list))
+  //     return list.filter(
+  //       (provider): provider is string => typeof provider === "string",
+  //     );
+  //   // const provider = user?.app_metadata?.provider;
+  //   // return typeof provider === "string" ? [provider] : [];
+  // }, [user]);
   const copy = SECTION_COPY[section];
 
   function updateSettings<K extends keyof AppSettings>(
@@ -859,7 +859,7 @@ export function Settings() {
                 <ComingSoon />
               </div>
             </SettingsCard>
-            <SettingsCard>
+            {/* <SettingsCard>
               <GroupHeading title="Connected login providers" />
               {providers.length ? (
                 providers.map((provider) => (
@@ -881,7 +881,7 @@ export function Settings() {
                   No connected provider details are available for this session.
                 </p>
               )}
-            </SettingsCard>
+            </SettingsCard> */}
             <SettingsCard>
               <GroupHeading title="Sessions & two-factor authentication" />
               <div className="space-y-3">
