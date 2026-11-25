@@ -18,7 +18,7 @@ The official `@supabase/supabase-js` client handles queries and RLS out of the b
 
 ### 3. Payment provider: Paystack (live)
 
-Paystack is already the mock in the frontend. Go live with their API. You'll need a **business-verified Paystack account** and your test/live keys in `.env`.
+Paystack is already the mock in the frontend. Go live with their API. You'll need a **business-verified Paystack account** and your test/live keys in `../server/.env`.
 
 ---
 
@@ -108,7 +108,7 @@ Enable Row Level Security on every table. Add a policy that allows users to only
 
 ## Step 2 — Supabase Client on the Server
 
-Add to `.env`:
+Add to `../server/.env`:
 
 ```
 SUPABASE_URL=https://<project>.supabase.co
@@ -117,7 +117,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 
 > Use the **service_role** key, not the anon key. This key bypasses RLS — your server verifies auth via middleware and is trusted.
 
-Create `server/src/lib/supabase.ts`:
+Create `../server/src/lib/supabase.ts`:
 
 ```ts
 import { createClient } from "@supabase/supabase-js";
@@ -135,7 +135,7 @@ Update `config/index.ts` to read and export these variables.
 
 ## Step 3 — Auth Middleware
 
-Create `server/src/middleware/auth.ts`:
+Create `../server/src/middleware/auth.ts`:
 
 ```ts
 import { supabase } from "../lib/supabase.js";
@@ -170,7 +170,7 @@ app.use("/api/chapters", requireAuth, chaptersRoutes);
 
 ## Step 4 — Conversation & Message CRUD
 
-Create `server/src/routes/conversations.routes.ts`:
+Create `../server/src/routes/conversations.routes.ts`:
 
 | Method | Route | Auth | Body / Notes |
 |---|---|---|---|
@@ -220,7 +220,7 @@ This is the most important step — it makes the billing model real.
 
 ## Step 6 — Profile Routes
 
-Create `server/src/routes/profile.routes.ts`:
+Create `../server/src/routes/profile.routes.ts`:
 
 | Method | Route | Auth | Notes |
 |---|---|---|---|
@@ -233,7 +233,7 @@ The generation routes read the profile from the database instead of trusting cli
 
 ## Step 7 — Payment & Billing Routes
 
-Create `server/src/routes/billing.routes.ts`:
+Create `../server/src/routes/billing.routes.ts`:
 
 | Method | Route | Auth | Notes |
 |---|---|---|---|
@@ -245,7 +245,7 @@ Create `server/src/routes/billing.routes.ts`:
 ### Paystack integration:
 
 1. Sign up at [paystack.com](https://paystack.com), verify your business
-2. Get your test/live secret key → add `PAYSTACK_SECRET_KEY` to `.env`
+2. Get your test/live secret key → add `PAYSTACK_SECRET_KEY` to `../server/.env`
 3. Register your webhook URL in the Paystack dashboard: `https://<your-api>/api/billing/webhook`
 4. Use Paystack's Initialize Transaction API for checkout
 5. Use Paystack's Verify Transaction API in the webhook handler
@@ -261,7 +261,7 @@ Create `server/src/routes/billing.routes.ts`:
 
 ## Step 8 — Export Recording
 
-Create `server/src/routes/exports.routes.ts`:
+Create `../server/src/routes/exports.routes.ts`:
 
 | Method | Route | Auth | Notes |
 |---|---|---|---|
@@ -301,7 +301,7 @@ This is the biggest refactor on the client side.
 
 ## Step 10 — Deployment Prep
 
-### Environment variables (final `.env.example`):
+### Environment variables (final `../server/.env.example`):
 
 ```
 # Server
@@ -326,13 +326,13 @@ PAYSTACK_WEBHOOK_SECRET=
 
 ### Checklist:
 
-- [ ] Supabase migration files versioned in `server/migrations/`
+- [ ] Supabase migration files versioned in `../server/migrations/`
 - [ ] RLS enabled on all tables with user-scoped policies
 - [ ] CORS updated for production domain
 - [ ] Rate limiting added (express-rate-limit or Supabase RLS)
 - [ ] `GET /api/health` returns 200 for load balancers
 - [ ] Error logs go to a monitoring service (Sentry, Logtail, etc.)
-- [ ] Client `.env` points to the production API URL (`VITE_API_URL`)
+- [ ] Client `../client/.env` points to the production API URL (`VITE_API_URL`, not yet implemented in the client)
 - [ ] Paystack webhook URL registered in the Paystack dashboard
 - [ ] Test the full flow: register → generate topic → generate chapters → export → upgrade plan → top-up → downgrade
 

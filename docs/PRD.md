@@ -244,7 +244,8 @@ Priorities: **P0** = must ship for beta, **P1** = should, **P2** = later/nice-to
 ### 9.1 Stack
 
 React (Vite) + Node/Express + PostgreSQL/Prisma + JWT auth + Supabase for auth/tokens + Paystack
-for payments + n8n for AI orchestration. Monorepo: `client/` (SPA) + `server/` (API).
+for payments + n8n for AI orchestration. Two independent projects: `client/` (SPA) + `server/` (API),
+with documentation in `docs/`.
 
 ### 9.2 n8n orchestration
 
@@ -263,14 +264,17 @@ workflow change in n8n, not a code deploy.
 ### 9.3 Repository layout
 
 ```
-client/            # React SPA
+client/            # React SPA — standalone npm project
   src/pages/       # landing, auth, generate, dashboard, project, chapters
   src/components/  # navbar, footer, layouts, topic cards, payments, empty states, chat
   src/lib/         # api client, hooks, auth token, project profile, mock data
-server/            # Express API
+  package.json     # client dependencies and scripts
+server/            # Express API — standalone npm project
   src/routes/      # auth, chat, topics, chapters, payments, user
   src/services/    # n8n client, mail, auth, google, paystack
   prisma/          # schema, migrations, seed
+  package.json     # server dependencies and scripts
+docs/              # PRD, README, backend build guide
 n8n/               # workflow exports (generation workflow, versioned)
 ```
 

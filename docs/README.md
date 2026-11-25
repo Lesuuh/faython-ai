@@ -25,17 +25,27 @@ Built for CogniTech Integrated Solution (CIS).
 
 ## Getting started
 
-Requires **Node.js ≥ 20** and npm.
+Requires **Node.js ≥ 20** and npm. The client and server are independent npm projects; install and run each in its own terminal.
 
 ```sh
-npm i
+# Terminal 1 — API (:4000)
+cd server
+npm install
 cp .env.example .env      # then fill in the values below
-npm run dev              # server on :4000 + client on :5173
+npm run dev
+```
+
+```sh
+# Terminal 2 — SPA (:5173)
+cd client
+npm install
+cp .env.example .env      # optional; see demo mode below
+npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
 
-> No `.env` values set? The app still runs: the client falls back to **demo mode** (sample responses, `localStorage` persistence, no auth).
+> No client `.env` values set? The app still runs: the client falls back to **demo mode** (sample responses, `localStorage` persistence, no auth).
 
 ---
 
@@ -48,8 +58,11 @@ Open [http://localhost:5173](http://localhost:5173).
 | `PORT` | API port (default `4000`) |
 | `NODE_ENV` | `development` / `production` |
 | `CLIENT_URL` | Allowed CORS origin, e.g. `http://localhost:5173` |
+| `SUPABASE_URL` | Supabase project URL (server-side; optional for demo) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key — backend only, never expose |
 | `N8N_TOPICS_WEBHOOK_URL` | n8n workflow URL for topic generation |
 | `N8N_CHAPTER_WEBHOOK_URL` | n8n workflow URL for chapter generation |
+| `N8N_CHAT_WEBHOOK_URL` | n8n workflow URL for project Q&A (chat page) |
 | `N8N_WEBHOOK_SECRET` | Shared secret sent as `X-Faython-Secret`; must match the n8n workflow guard |
 | `N8N_TIMEOUT_MS` | Webhook request timeout (default `90000`) |
 
@@ -71,10 +84,11 @@ The server is a small orchestration layer: it validates input and forwards to n8
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | `GET` | `/api/health` | Liveness check |
-| `POST` | `/api/chat` | Generate topic suggestions. Body: `{ prompt?, level?, discipline? }` or `multipart/form-data` with an `image/*` `file`. Returns `{ reply }`. |
-| `POST` | `/api/chapters/:topicId/:chapterNum` | Generate a chapter (`chapterNum` 1–5). Body: `{ topicTitle?, prompt?, reply?, previousChapters? }`. Returns `{ chapterNumber, content }`. |
+| `POST` | `/api/topics` | Generate topic suggestions. Body: `{ intake }`. Returns `{ text }`. |
+| `POST` | `/api/chapters/:projectId/:chapterNumber` | Generate a chapter (`chapterNumber` 1–5). Body: `{ title, intake, previousChapters?, instruction?, chapterTitle? }`. Returns `{ chapterNumber, text }`. |
+| `POST` | `/api/projects/ask` | Answer a question within a project. Body: `{ projectId, title, intake, chapters?, question, history? }`. Returns `{ text }`. |
 
-The client proxies `/api/*` to `http://localhost:4000` in dev (`client/vite.config.ts`).
+The client proxies `/api/*` to `http://localhost:4000` in dev (`../client/vite.config.ts`).
 
 ---
 
@@ -82,33 +96,41 @@ The client proxies `/api/*` to `http://localhost:4000` in dev (`client/vite.conf
 
 ```
 .
-├── client/                 # React 19 + Vite + Tailwind v4 SPA
+├── client/                 # React 19 + Vite + Tailwind v4 SPA — standalone npm project
 │   ├── src/
 │   │   ├── components/     # AppShell, ChatSidebar, chat/markdown/UI components
 │   │   ├── context/        # ChatContext, AuthContext, useChat store
 │   │   ├── lib/            # api, chat/project/billing/token/file/profile stores
 │   │   ├── pages/          # Chat, Projects, Files, Billing, Settings, auth pages
 │   │   └── router.tsx      # AppShell layout + routes
+│   ├── package.json        # client dependencies and scripts
 │   └── vercel.json         # SPA rewrites for static hosting
-├── server/                 # Express 5 API (tsx dev, tsc build)
-│   └── src/
-│       ├── routes/         # chat.routes.ts, chapters.routes.ts
-│       ├── services/       # n8n.service.ts (webhook orchestration)
-│       └── config/         # env config + validation
-└── package.json            # npm workspaces (client + server)
+├── server/                 # Express 5 API — standalone npm project (tsx dev, tsc build)
+│   ├── src/
+│   │   ├── routes/         # topics, chapters, projects routes
+│   │   ├── services/       # n8n.service.ts (webhook orchestration)
+│   │   └── config/         # env config + validation
+│   └── package.json        # server dependencies and scripts
+└── docs/
+    ├── PRD.md              # Product requirements
+    ├── README.md           # This guide
+    └── BACKEND_GUIDE.md    # Backend build/deployment notes
 ```
 
 ---
 
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Run server (:4000) and client (:5173) concurrently |
-| `npm run build` | Type-check + build server and client |
-| `npm run start` | Run the built server (`node dist/index.js`) |
-| `npm run build -w client` | Build just the client |
-| `npm run lint -w client` | Type-check the client |
+Run these from the relevant project directory; there is no root workspace.
+
+| Directory | Command | Description |
+| --- | --- | --- |
+| `server/` | `npm run dev` | Run API on :4000 with watch mode |
+| `server/` | `npm run build` | Compile TypeScript to `dist/` |
+| `server/` | `npm start` | Run the built server (`node dist/index.js`) |
+| `client/` | `npm run dev` | Run SPA on :5173 |
+| `client/` | `npm run build` | Type-check + build the production bundle |
+| `client/` | `npm run lint` | Type-check the client |
 
 ---
 
@@ -145,7 +167,7 @@ Top-ups (`5k/$3`, `20k/$9`, `100k/$35`) never expire and roll over between month
 ## Known limitations
 
 - **No server-side persistence or token enforcement.** Conversations, exports, and token balances live in `localStorage` and are shared across all accounts on the same browser. Real per-user isolation requires adding storage + auth enforcement to the backend.
-- **Simulated payments.** Switch `lib/supabase.ts`'s `demoMode` off / wire a real provider in `lib/payments.ts` before taking payments.
+- **Simulated payments.** Switch `client/src/lib/supabase.ts`'s `demoMode` off / wire a real provider in `client/src/lib/payments.ts` before taking payments.
 - **Minimal Markdown renderer.** Headers, lists, and bold are supported; italics, links, and code blocks render as plain text.
 - **Demo responses** are sample content — real quality depends on wiring the n8n → Gemini workflows and setting `N8N_*` credentials.
 
