@@ -1,6 +1,6 @@
 import {
   useEffect,
-  useMemo,
+  // useMemo,
   useState,
   type ComponentType,
   type ReactNode,
@@ -13,7 +13,7 @@ import {
   CircleHelp,
   CreditCard,
   Download,
-  Fingerprint,
+  // Fingerprint,
   Globe,
   KeyRound,
   Laptop,
