@@ -3,17 +3,6 @@ export type TopicInputType = "TEXT" | "IMAGE";
 export type MessageRole = "USER" | "AI";
 export type PaymentStatus = "PENDING" | "SUCCESS" | "FAILED";
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: Role;
-  emailVerified: boolean;
-  avatarUrl: string | null;
-  notificationsOn: boolean;
-  createdAt: string;
-}
-
 export interface Topic {
   id: string;
   userId: string;

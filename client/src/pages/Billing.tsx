@@ -5,15 +5,27 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { PaystackModal } from "@/components/PaystackModal";
-import { useAuth } from "@/context/AuthContext";
-import { loadBilling, setBillingPlan, type BillPayment, type BillingState } from "@/lib/billing-store";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  loadBilling,
+  setBillingPlan,
+  type BillPayment,
+  type BillingState,
+} from "@/lib/billing-store";
 import { applyCheckout, type CheckoutRequest } from "@/lib/payments";
 import { PLANS, TOP_UP_PACKS, planById, type Plan } from "@/lib/pricing";
-import { applyPlanToTokens, getTokenAccount, useTokenBalance } from "@/lib/token-store";
+import {
+  applyPlanToTokens,
+  getTokenAccount,
+  useTokenBalance,
+} from "@/lib/token-store";
 import { formatDate } from "@/lib/format";
 import { cx } from "@/lib/cx";
 
-const STATUS_STYLE: Record<BillPayment["status"], { badge: "success" | "warning" | "danger"; label: string }> = {
+const STATUS_STYLE: Record<
+  BillPayment["status"],
+  { badge: "success" | "warning" | "danger"; label: string }
+> = {
   success: { badge: "success", label: "Paid" },
   pending: { badge: "warning", label: "Pending" },
   failed: { badge: "danger", label: "Failed" },
@@ -23,7 +35,9 @@ export function Billing() {
   const { user } = useAuth();
   const userId = user?.id ?? "guest";
 
-  const [billing, setBilling] = useState<BillingState>(() => loadBilling(userId));
+  const [billing, setBilling] = useState<BillingState>(() =>
+    loadBilling(userId),
+  );
   const [checkout, setCheckout] = useState<CheckoutRequest | null>(null);
 
   useEffect(() => {
@@ -84,18 +98,27 @@ export function Billing() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-[15px] font-bold tracking-[-0.01em]">{plan.name} plan</h2>
-                <Badge variant="soft">{plan.priceMonthly === 0 ? "Free" : `$${plan.priceMonthly}/mo`}</Badge>
+                <h2 className="text-[15px] font-bold tracking-[-0.01em]">
+                  {plan.name} plan
+                </h2>
+                <Badge variant="soft">
+                  {plan.priceMonthly === 0
+                    ? "Free"
+                    : `$${plan.priceMonthly}/mo`}
+                </Badge>
               </div>
               <p className="mt-1 text-xs text-muted">
-                {plan.tokensPerMonth.toLocaleString()} tokens refresh at the start of each month.
+                {plan.tokensPerMonth.toLocaleString()} tokens refresh at the
+                start of each month.
               </p>
             </div>
             <div className="text-right">
               <div className="flex items-center justify-end gap-1.5 text-[15px] font-bold text-foreground">
                 <Zap size={15} className="text-primary" />
                 {balance.toLocaleString()}
-                <span className="text-xs font-medium text-muted">tokens left</span>
+                <span className="text-xs font-medium text-muted">
+                  tokens left
+                </span>
               </div>
             </div>
           </div>
@@ -104,12 +127,16 @@ export function Billing() {
             <div className="mb-1.5 flex items-center justify-between text-xs text-muted">
               <span>Used this period</span>
               <span>
-                {account.consumedThisPeriod.toLocaleString()} / {allowance.toLocaleString()} tokens
+                {account.consumedThisPeriod.toLocaleString()} /{" "}
+                {allowance.toLocaleString()} tokens
               </span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-background">
               <div
-                className={cx("h-full rounded-full transition-all", usedPct >= 90 ? "bg-danger" : "bg-primary")}
+                className={cx(
+                  "h-full rounded-full transition-all",
+                  usedPct >= 90 ? "bg-danger" : "bg-primary",
+                )}
                 style={{ width: `${usedPct}%` }}
               />
             </div>
@@ -133,7 +160,9 @@ export function Billing() {
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <h3 className="text-[15px] font-bold tracking-[-0.01em]">{p.name}</h3>
+                    <h3 className="text-[15px] font-bold tracking-[-0.01em]">
+                      {p.name}
+                    </h3>
                     {current && <Badge variant="success">Current</Badge>}
                   </div>
                   <div className="mt-3">
@@ -149,8 +178,14 @@ export function Billing() {
                   </p>
                   <ul className="mt-4 grid gap-2">
                     {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-[13px] leading-relaxed text-muted">
-                        <Check size={14} className="mt-0.5 shrink-0 text-primary" />
+                      <li
+                        key={f}
+                        className="flex items-start gap-2 text-[13px] leading-relaxed text-muted"
+                      >
+                        <Check
+                          size={14}
+                          className="mt-0.5 shrink-0 text-primary"
+                        />
                         {f}
                       </li>
                     ))}
@@ -161,7 +196,11 @@ export function Billing() {
                     onClick={() => choosePlan(p)}
                     disabled={current}
                   >
-                    {current ? "Current plan" : p.priceMonthly === 0 ? "Downgrade" : "Choose plan"}
+                    {current
+                      ? "Current plan"
+                      : p.priceMonthly === 0
+                        ? "Downgrade"
+                        : "Choose plan"}
                   </Button>
                 </div>
               );
@@ -171,7 +210,9 @@ export function Billing() {
 
         <section className="mt-10">
           <h2 className="text-lg font-bold tracking-[-0.01em]">Buy tokens</h2>
-          <p className="mt-1 text-sm text-muted">Top-ups never expire and roll over each month.</p>
+          <p className="mt-1 text-sm text-muted">
+            Top-ups never expire and roll over each month.
+          </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             {TOP_UP_PACKS.map((pack) => (
               <div
@@ -184,7 +225,9 @@ export function Billing() {
                 <div className="mt-3 text-2xl font-bold tracking-[-0.02em]">
                   {pack.tokens.toLocaleString()}
                 </div>
-                <p className="text-[13px] text-muted">tokens · ${pack.price} one-time</p>
+                <p className="text-[13px] text-muted">
+                  tokens · ${pack.price} one-time
+                </p>
                 <div className="mt-4 flex-1" />
                 <Button variant="secondary" onClick={() => chooseTopUp(pack)}>
                   Buy tokens
@@ -195,7 +238,9 @@ export function Billing() {
         </section>
 
         <section className="mt-10">
-          <h2 className="text-lg font-bold tracking-[-0.01em]">Billing history</h2>
+          <h2 className="text-lg font-bold tracking-[-0.01em]">
+            Billing history
+          </h2>
           {billing.payments.length === 0 ? (
             <p className="mt-4 rounded-xl border border-border bg-surface px-4 py-6 text-center text-sm text-muted">
               No payments yet — they'll appear here after your first checkout.
@@ -220,7 +265,9 @@ export function Billing() {
                     <div className="flex shrink-0 items-center gap-3">
                       <span className="text-sm font-semibold text-foreground">
                         {p.currency === "NGN" ? "₦" : "$"}
-                        {p.currency === "NGN" ? (p.amount / 100).toFixed(2) : p.amount.toFixed(2)}
+                        {p.currency === "NGN"
+                          ? (p.amount / 100).toFixed(2)
+                          : p.amount.toFixed(2)}
                       </span>
                       <Badge variant={style.badge}>{style.label}</Badge>
                     </div>
@@ -233,8 +280,8 @@ export function Billing() {
 
         <p className="mt-8 flex items-center gap-1.5 text-xs text-muted-foreground">
           <BadgeCheck size={14} className="shrink-0 text-primary" />
-          Payments are handled by Paystack. In this preview, checkout is simulated and no real
-          charge is made.
+          Payments are handled by Paystack. In this preview, checkout is
+          simulated and no real charge is made.
         </p>
       </div>
 

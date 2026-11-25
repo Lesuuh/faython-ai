@@ -1,5 +1,11 @@
 import { useEffect, useState, type ComponentType, type FormEvent } from "react";
-import { Link, NavLink, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import {
   ArrowRight,
   BookOpen,
@@ -24,8 +30,9 @@ import { loadAppSettings } from "@/lib/settings-store";
 import { useSignOut } from "@/components/SignOutDialog";
 import { cx } from "@/lib/cx";
 import type { Project } from "@/lib/project-store";
-import { useAuth } from "@/context/AuthContext";
+// import { useAuth } from "@/hooks/useAuth";
 import { useProject } from "@/context/ProjectContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const itemBase =
   "flex w-full items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium transition-colors";
@@ -70,7 +77,9 @@ function SidebarLink({
     <NavLink
       to={to}
       end={end}
-      className={({ isActive }) => cx(itemBase, isActive ? itemActive : itemIdle)}
+      className={({ isActive }) =>
+        cx(itemBase, isActive ? itemActive : itemIdle)
+      }
     >
       <Icon size={17} />
       {label}
@@ -86,7 +95,7 @@ export function ChatSidebar({
   onCloseMobile: () => void;
 }) {
   const { projects, activeId, selectProject, deleteProject } = useProject();
-  const { user, appUser, loading } = useAuth();
+  const { user, loading } = useAuth();
   const { requestSignOut, signOutDialog } = useSignOut();
   const location = useLocation();
   const navigate = useNavigate();
@@ -103,15 +112,16 @@ export function ChatSidebar({
     return () => window.removeEventListener("faython:settings", refresh);
   }, []);
 
-  const recent = [...projects].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const recent = [...projects].sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt),
+  );
   const startActive = location.pathname === "/new";
   const name =
     appSettings.general.displayName ||
-    user?.user_metadata?.full_name ||
-    appUser?.name ||
+    user?.name ||
     user?.email?.split("@")[0] ||
     "Student";
-  const email = appUser?.email || user?.email || "";
+  const email = user?.email || "";
 
   function handleStartNew() {
     navigate("/new");
@@ -131,7 +141,9 @@ export function ChatSidebar({
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    navigate(`/search${search.trim() ? `?q=${encodeURIComponent(search.trim())}` : ""}`);
+    navigate(
+      `/search${search.trim() ? `?q=${encodeURIComponent(search.trim())}` : ""}`,
+    );
     onCloseMobile();
   }
 
@@ -181,8 +193,18 @@ export function ChatSidebar({
             active={startActive}
             onClick={handleStartNew}
           />
-          <SidebarLink icon={FolderOpen} label="My Projects" to="/projects" end />
-          <SidebarLink icon={FileText} label="Files & Documents" to="/files" end />
+          <SidebarLink
+            icon={FolderOpen}
+            label="My Projects"
+            to="/projects"
+            end
+          />
+          <SidebarLink
+            icon={FileText}
+            label="Files & Documents"
+            to="/files"
+            end
+          />
         </nav>
 
         <form onSubmit={submitSearch} className="px-3 pt-3" role="search">
@@ -215,6 +237,7 @@ export function ChatSidebar({
           </div>
         </form>
 
+        {/* recent projects */}
         <div className="mt-5 min-h-0 flex-1 overflow-y-auto overflow-x-hidden border-t border-border px-3 pt-4">
           <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Recent projects
@@ -235,7 +258,9 @@ export function ChatSidebar({
               </ButtonLink>
             </div>
           ) : recent.length === 0 ? (
-            <p className="px-3 py-2 text-[13px] text-muted-foreground">No projects yet.</p>
+            <p className="px-3 py-2 text-[13px] text-muted-foreground">
+              No projects yet.
+            </p>
           ) : (
             <div className="grid gap-1">
               {recent.map((c) => {
@@ -253,7 +278,9 @@ export function ChatSidebar({
                       onClick={() => handleSelect(c.id)}
                       className={cx(
                         "flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden rounded-md px-3 py-2 text-left text-sm font-medium transition-colors",
-                        isActive ? "text-primary" : "text-muted hover:text-foreground",
+                        isActive
+                          ? "text-primary"
+                          : "text-muted hover:text-foreground",
                       )}
                     >
                       <Sparkles size={15} className="shrink-0" />
@@ -286,8 +313,14 @@ export function ChatSidebar({
                     aria-label="Account menu"
                   >
                     <div className="border-b border-border px-3 py-2.5">
-                      <p className="truncate text-sm font-semibold text-foreground">{name}</p>
-                      {email && <p className="mt-0.5 truncate text-xs text-muted">{email}</p>}
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {name}
+                      </p>
+                      {email && (
+                        <p className="mt-0.5 truncate text-xs text-muted">
+                          {email}
+                        </p>
+                      )}
                       <div className="mt-2">
                         <TokenChip />
                       </div>
@@ -351,12 +384,21 @@ export function ChatSidebar({
                     {name.slice(0, 1).toUpperCase()}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-foreground">{name}</span>
-                    {email && <span className="block truncate text-xs text-muted">{email}</span>}
+                    <span className="block truncate text-sm font-semibold text-foreground">
+                      {name}
+                    </span>
+                    {email && (
+                      <span className="block truncate text-xs text-muted">
+                        {email}
+                      </span>
+                    )}
                   </span>
                   <ChevronDown
                     size={16}
-                    className={cx("shrink-0 text-muted transition-transform", accountOpen && "rotate-180")}
+                    className={cx(
+                      "shrink-0 text-muted transition-transform",
+                      accountOpen && "rotate-180",
+                    )}
                   />
                 </button>
               </div>
@@ -389,15 +431,12 @@ export function ChatSidebar({
         onClose={() => setLearnMoreOpen(false)}
         title="About Faython Scholar"
         description="Faython is an AI-powered academic research workspace. Organise projects, explore research ideas, develop chapters, and keep your conversations and documents together."
-        footer={
-          <Button onClick={() => setLearnMoreOpen(false)}>
-            Done
-          </Button>
-        }
+        footer={<Button onClick={() => setLearnMoreOpen(false)}>Done</Button>}
       >
         <p className="text-sm leading-relaxed text-muted">
-          Use project instructions and academic context to guide your work. Review generated content
-          carefully, and verify any claims or references before relying on them.
+          Use project instructions and academic context to guide your work.
+          Review generated content carefully, and verify any claims or
+          references before relying on them.
         </p>
       </Modal>
 

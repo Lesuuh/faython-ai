@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { exportProjectDocx } from "@/lib/export";
 import { formatDate } from "@/lib/format";
 import { deleteFile, loadFiles, type ExportedFile } from "@/lib/file-store";
@@ -52,7 +52,9 @@ export function Files() {
             <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-soft text-primary">
               <FileText size={22} />
             </span>
-            <h2 className="mt-5 text-lg font-bold tracking-[-0.01em]">No documents yet</h2>
+            <h2 className="mt-5 text-lg font-bold tracking-[-0.01em]">
+              No documents yet
+            </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               Export a project from its thread and it will show up here.
             </p>
@@ -70,9 +72,13 @@ export function Files() {
                 <div className="flex min-w-0 items-center gap-3">
                   <FileText size={17} className="shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold text-foreground">{f.name}</div>
+                    <div className="truncate text-sm font-semibold text-foreground">
+                      {f.name}
+                    </div>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
-                      <Badge variant={f.kind === "project" ? "success" : "neutral"}>
+                      <Badge
+                        variant={f.kind === "project" ? "success" : "neutral"}
+                      >
                         {f.kind === "project" ? "Project" : "Conversation"}
                       </Badge>
                       <span>{formatDate(f.exportedAt)}</span>

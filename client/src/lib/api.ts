@@ -91,11 +91,6 @@ export type AskRequest = {
 };
 
 export const api = {
-  me: () =>
-    demoMode
-      ? mock.me()
-      : requestOrDemo("/api/user/me", () => mock.me()),
-
   generateTopics(input: TopicsRequest): Promise<GeneratedText> {
     if (demoMode) return mock.generateTopics().then((text) => ({ text }));
     return requestOrDemo(

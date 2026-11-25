@@ -1,15 +1,25 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+// import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { googleIcon } from "@/components/googleIcon";
+import { useAuth } from "@/hooks/useAuth";
 
-export function GoogleButton({ onBeforeRedirect }: { onBeforeRedirect?: () => void }) {
-  const { googleConfigured, signInWithGoogle } = useAuth();
+export function GoogleButton() {
+  const { signInWithGoogle } = useAuth();
   const [redirecting, setRedirecting] = useState(false);
 
-  if (!googleConfigured) return null;
+  let googleConfigured = true;
+
+  if (!googleConfigured) {
+    return (
+      <p className="rounded-md border border-warning-border bg-warning-bg px-3 py-2.5 text-center text-xs leading-relaxed text-muted">
+        Google sign-in is unavailable. Configure the Supabase URL and anon key
+        to enable OAuth.
+      </p>
+    );
+  }
 
   return (
     <Button
@@ -19,12 +29,13 @@ export function GoogleButton({ onBeforeRedirect }: { onBeforeRedirect?: () => vo
       disabled={redirecting}
       onClick={async () => {
         setRedirecting(true);
-        onBeforeRedirect?.();
         try {
           await signInWithGoogle();
         } catch (err) {
           setRedirecting(false);
-          toast.error(err instanceof Error ? err.message : "Google sign-in failed");
+          toast.error(
+            err instanceof Error ? err.message : "Google sign-in failed",
+          );
         }
       }}
     >

@@ -1,10 +1,18 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Clock3, FileText, FolderOpen, Plus, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Clock3,
+  FileText,
+  FolderOpen,
+  Plus,
+  Sparkles,
+} from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
-import { useAuth } from "@/context/AuthContext";
+// import { useAuth } from "@/hooks/useAuth";
 import { useProject } from "@/context/ProjectContext";
 import { loadAppSettings } from "@/lib/settings-store";
 import { cx } from "@/lib/cx";
+import { useAuth } from "@/hooks/useAuth";
 
 function relativeDate(iso: string): string {
   const then = new Date(iso).getTime();
@@ -20,14 +28,13 @@ function relativeDate(iso: string): string {
 }
 
 export function Home() {
-  const { user, appUser } = useAuth();
+  const { userSession, user } = useAuth();
   const { projects } = useProject();
 
-  const name =
-    loadAppSettings().general.displayName ||
-    user?.user_metadata?.full_name ||
-    appUser?.name ||
-    "";
+  console.log(userSession);
+  console.log(user);
+
+  const name = loadAppSettings().general.displayName || user?.name || "";
   const first = name.trim().split(" ")[0];
   const recent = [...projects]
     .filter((project) => project.status !== "archived")
@@ -42,14 +49,16 @@ export function Home() {
             <Sparkles size={21} />
           </span>
           <p className="mt-5 text-sm font-medium text-muted">
-            {first ? `Welcome back, ${first}` : "Your academic research workspace"}
+            {first
+              ? `Welcome back, ${first}`
+              : "Your academic research workspace"}
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-[-0.035em] text-foreground sm:text-4xl">
             What are you researching?
           </h1>
           <p className="mt-3 max-w-[48ch] text-[15px] leading-relaxed text-muted">
-            Start a research project with Faython. Develop your topic, explore ideas and work on
-            your chapters at your own pace.
+            Start a research project with Faython. Develop your topic, explore
+            ideas and work on your chapters at your own pace.
           </p>
           <ButtonLink to="/new" size="lg" className="mt-7">
             <Plus size={17} /> Start a project
@@ -65,8 +74,12 @@ export function Home() {
         <section className="mt-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold text-foreground">Recent projects</h2>
-              <p className="mt-1 text-sm text-muted">Pick up where you left off.</p>
+              <h2 className="text-base font-semibold text-foreground">
+                Recent projects
+              </h2>
+              <p className="mt-1 text-sm text-muted">
+                Pick up where you left off.
+              </p>
             </div>
             {projects.length > 0 && (
               <ButtonLink to="/projects" variant="muted" size="sm">
@@ -110,9 +123,12 @@ export function Home() {
             </div>
           ) : (
             <div className="mt-4 rounded-xl border border-dashed border-border px-5 py-8 text-center">
-              <p className="text-sm font-medium text-foreground">Your projects will appear here</p>
+              <p className="text-sm font-medium text-foreground">
+                Your projects will appear here
+              </p>
               <p className="mt-1 text-sm text-muted">
-                Create a project to keep your research and conversations together.
+                Create a project to keep your research and conversations
+                together.
               </p>
             </div>
           )}

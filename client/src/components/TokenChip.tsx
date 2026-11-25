@@ -1,17 +1,17 @@
 import { Zap } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { loadBilling } from "@/lib/billing-store";
 import { TOKEN_COSTS } from "@/lib/pricing";
 import { useTokenBalance } from "@/lib/token-store";
 import { cx } from "@/lib/cx";
 
 export function TokenChip() {
-  const { user } = useAuth();
-  if (!user) return null;
-  const userId = user.id;
+  const { user, loading } = useAuth();
+  const userId = user?.id ?? "guest";
   const planId = loadBilling(userId).planId;
   const balance = useTokenBalance(userId, planId);
+  if (loading || !user) return null;
   const low = balance < Math.min(TOKEN_COSTS.topics, TOKEN_COSTS.chapter);
 
   return (

@@ -10,7 +10,6 @@ import type {
   TopicDetail,
   TopicsMeta,
   TopicsResponse,
-  User,
 } from "./types";
 
 /**
@@ -20,17 +19,6 @@ import type {
 
 const NOW = new Date().toISOString();
 const DAY_AGO = new Date(Date.now() - 86400000).toISOString();
-
-export const demoAppUser: User = {
-  id: "demo-user-0001",
-  email: "demo@faython.local",
-  name: "Demo Student",
-  role: "STUDENT",
-  emailVerified: true,
-  avatarUrl: null,
-  notificationsOn: true,
-  createdAt: NOW,
-};
 
 export const SAMPLE_TOPIC_REPLY = [
   "Design and Fabrication of a Solar-Powered Water Pumping System for Rural Irrigation",
@@ -321,16 +309,7 @@ async function later<T>(value: T, ms = 500): Promise<T> {
 }
 
 export const mock = {
-  me: () => later<{ user: User }>({ user: demoAppUser }, 200),
   usage: () => later<{ usage: DailyUsage }>(mockUsage(), 250),
-  updateProfile: (data: { name?: string; email?: string }) =>
-    later<{ user: User }>(
-      { user: { ...demoAppUser, ...(data.name ? { name: data.name } : {}) } },
-      300,
-    ),
-  updateSettings: (data: { notificationsOn?: boolean }) =>
-    later<{ user: User }>({ user: { ...demoAppUser, ...data } }, 300),
-  deleteAccount: () => later<{ ok: boolean }>({ ok: true }, 300),
   generateTopics: () => later<string>(SAMPLE_TOPIC_REPLY, 900),
   generateChapter: (chapterNumber: number) =>
     later<string>(MOCK_CHAPTERS[chapterNumber] || MOCK_CHAPTERS[1], 1200),

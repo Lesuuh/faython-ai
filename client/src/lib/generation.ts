@@ -3,7 +3,7 @@ import { TOKEN_COSTS, type PlanId } from "@/lib/pricing";
 import { loadBilling } from "@/lib/billing-store";
 import { canAfford } from "@/lib/token-store";
 import { loadAppSettings } from "@/lib/settings-store";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -22,7 +22,10 @@ export function generationCost(kind: GenerationKind): number {
   return TOKEN_COSTS[kind];
 }
 
-export function generationLabel(kind: GenerationKind, chapterNumber?: number): string {
+export function generationLabel(
+  kind: GenerationKind,
+  chapterNumber?: number,
+): string {
   if (kind === "chapter") return `Chapter ${chapterNumber ?? 1}`;
   if (kind === "ask") return "Project question";
   return "Topic ideas";
@@ -60,7 +63,8 @@ function withGlobalWritingDefaults(project: Project): Project {
     ...project,
     intake: {
       ...project.intake,
-      referencingStyle: project.intake.referencingStyle || defaults.referencingStyle,
+      referencingStyle:
+        project.intake.referencingStyle || defaults.referencingStyle,
       constraints: [
         project.intake.constraints.trim(),
         `Global writing defaults:\n${lines.join("\n")}`,
@@ -72,7 +76,9 @@ function withGlobalWritingDefaults(project: Project): Project {
 }
 
 /** Step 2 of the wizard: turn an intake into selectable topic ideas. */
-export async function generateTopicIdeas(intake: ProjectIntake): Promise<TopicSuggestion[]> {
+export async function generateTopicIdeas(
+  intake: ProjectIntake,
+): Promise<TopicSuggestion[]> {
   const { text } = await api.generateTopics({ intake });
   return parseTopicSuggestions(text);
 }
@@ -132,7 +138,10 @@ export function useGenerationGuard() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  return (kind: GenerationKind, chapterNumber?: number): GenerationPass | null => {
+  return (
+    kind: GenerationKind,
+    chapterNumber?: number,
+  ): GenerationPass | null => {
     if (authLoading) return null;
 
     if (!user) {

@@ -1,6 +1,14 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Archive, Copy, Download, FolderOpen, Pencil, Search, Trash2 } from "lucide-react";
+import {
+  Archive,
+  Copy,
+  Download,
+  FolderOpen,
+  Pencil,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -8,7 +16,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { exportProjectDocx } from "@/lib/export";
 import { formatDate } from "@/lib/format";
 import { useProject } from "@/context/ProjectContext";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { intakeSummary, type Project } from "@/lib/project-store";
 
 function chapterCount(project: Project): number {
@@ -16,7 +24,8 @@ function chapterCount(project: Project): number {
 }
 
 export function Projects() {
-  const { projects, deleteProject, renameProject, updateProject } = useProject();
+  const { projects, deleteProject, renameProject, updateProject } =
+    useProject();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -29,7 +38,8 @@ export function Projects() {
     const query = search.trim().toLowerCase();
     const list = [...projects].filter((project) => {
       if (!query) return true;
-      const haystack = `${project.title} ${project.researchTopic ?? ""} ${project.description ?? ""}`.toLowerCase();
+      const haystack =
+        `${project.title} ${project.researchTopic ?? ""} ${project.description ?? ""}`.toLowerCase();
       return haystack.includes(query);
     });
 
@@ -65,7 +75,15 @@ export function Projects() {
       instructions: project.instructions ?? [],
       files: project.files ?? [],
       documents: project.documents ?? [],
-      activity: [{ id: `${Date.now()}-activity`, type: "project_created", message: "Duplicated project", createdAt: now }, ...(project.activity ?? [])],
+      activity: [
+        {
+          id: `${Date.now()}-activity`,
+          type: "project_created",
+          message: "Duplicated project",
+          createdAt: now,
+        },
+        ...(project.activity ?? []),
+      ],
       conversations: (project.conversations ?? []).map((conversation) => ({
         ...conversation,
         id: `${conversation.id}-copy-${Date.now()}`,
@@ -75,13 +93,21 @@ export function Projects() {
     };
     updateProject(project.id, (current) => current);
     const nextProjects = [copy, ...projects];
-    localStorage.setItem(`faython:projects:${user?.id ?? "guest"}`, JSON.stringify(nextProjects));
+    localStorage.setItem(
+      `faython:projects:${user?.id ?? "guest"}`,
+      JSON.stringify(nextProjects),
+    );
     toast.success("Project duplicated");
   }
 
   function archiveProject(project: Project) {
-    updateProject(project.id, (current) => ({ ...current, status: current.status === "archived" ? "active" : "archived" }));
-    toast.success(project.status === "archived" ? "Project restored" : "Project archived");
+    updateProject(project.id, (current) => ({
+      ...current,
+      status: current.status === "archived" ? "active" : "archived",
+    }));
+    toast.success(
+      project.status === "archived" ? "Project restored" : "Project archived",
+    );
   }
 
   function exportProject(project: Project) {
@@ -111,7 +137,10 @@ export function Projects() {
 
         <div className="mt-6 flex flex-col gap-3 rounded-xl border border-border bg-surface p-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -121,7 +150,9 @@ export function Projects() {
           </div>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "updated" | "alphabetical")}
+            onChange={(e) =>
+              setSortBy(e.target.value as "updated" | "alphabetical")
+            }
             className="h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
           >
             <option value="updated">Sort: recently updated</option>
@@ -134,9 +165,12 @@ export function Projects() {
             <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-soft text-primary">
               <FolderOpen size={22} />
             </span>
-            <h2 className="mt-5 text-lg font-bold tracking-[-0.01em]">No projects match your search</h2>
+            <h2 className="mt-5 text-lg font-bold tracking-[-0.01em]">
+              No projects match your search
+            </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Create a new research project or adjust your search to find an existing workspace.
+              Create a new research project or adjust your search to find an
+              existing workspace.
             </p>
             <ButtonLink to="/new" variant="primary" className="mt-6">
               Start a project
@@ -147,7 +181,9 @@ export function Projects() {
             {filtered.map((project) => {
               const editing = editingId === project.id;
               const done = chapterCount(project);
-              const summary = intakeSummary(project.intake).slice(0, 3).join(" · ");
+              const summary = intakeSummary(project.intake)
+                .slice(0, 3)
+                .join(" · ");
               const conversationCount = project.conversations?.length ?? 1;
               const docCount = project.documents?.length ?? 0;
 
@@ -173,7 +209,11 @@ export function Projects() {
                             className="h-9 w-full max-w-[320px] rounded-md border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
                             aria-label="Project title"
                           />
-                          <Button size="sm" variant="secondary" onClick={() => saveRename(project.id)}>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => saveRename(project.id)}
+                          >
                             Save
                           </Button>
                         </form>
@@ -188,7 +228,10 @@ export function Projects() {
                       )}
 
                       <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">
-                        {project.description || project.researchTopic || summary || "No research description yet."}
+                        {project.description ||
+                          project.researchTopic ||
+                          summary ||
+                          "No research description yet."}
                       </p>
 
                       <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
@@ -206,22 +249,51 @@ export function Projects() {
 
                     {!editing && (
                       <div className="flex shrink-0 flex-wrap items-center gap-2">
-                        <Button size="sm" variant="secondary" onClick={() => openProject(project)}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => openProject(project)}
+                        >
                           Open
                         </Button>
-                        <Button size="sm" variant="muted" onClick={() => startRename(project)} title="Rename project">
+                        <Button
+                          size="sm"
+                          variant="muted"
+                          onClick={() => startRename(project)}
+                          title="Rename project"
+                        >
                           <Pencil size={14} />
                         </Button>
-                        <Button size="sm" variant="muted" onClick={() => duplicateProject(project)} title="Duplicate project">
+                        <Button
+                          size="sm"
+                          variant="muted"
+                          onClick={() => duplicateProject(project)}
+                          title="Duplicate project"
+                        >
                           <Copy size={14} />
                         </Button>
-                        <Button size="sm" variant="muted" onClick={() => archiveProject(project)} title="Archive project">
+                        <Button
+                          size="sm"
+                          variant="muted"
+                          onClick={() => archiveProject(project)}
+                          title="Archive project"
+                        >
                           <Archive size={14} />
                         </Button>
-                        <Button size="sm" variant="muted" onClick={() => exportProject(project)} title="Export DOCX">
+                        <Button
+                          size="sm"
+                          variant="muted"
+                          onClick={() => exportProject(project)}
+                          title="Export DOCX"
+                        >
                           <Download size={14} />
                         </Button>
-                        <Button size="sm" variant="muted" onClick={() => setDeleteTarget(project)} title="Delete project">
+                        <Button
+                          size="sm"
+                          variant="muted"
+                          onClick={() => setDeleteTarget(project)}
+                          title="Delete project"
+                        >
                           <Trash2 size={14} />
                         </Button>
                       </div>

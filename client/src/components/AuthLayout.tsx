@@ -23,12 +23,9 @@ export function AuthLayout({
   ];
 
   return (
-    <div className="mx-auto grid min-h-screen w-full  grid-cols-1 lg:grid-cols-[5fr_6fr]">
-      <div className=" sm:flex items-center  relative hidden flex-col justify-center overflow-hidden border-r border-border bg-surface px-12 py-12 lg:flex">
-        <div
-          className="dot-grid pointer-events-none absolute inset-0"
-          aria-hidden="true"
-        />
+    <div className="mx-auto grid min-h-screen w-full grid-cols-1 lg:grid-cols-[5fr_6fr]">
+      <div className="relative hidden flex-col justify-center overflow-hidden border-r border-border bg-surface px-12 py-12 sm:flex lg:flex">
+        <div className="dot-grid pointer-events-none absolute inset-0" aria-hidden="true" />
         <div className="relative">
           <Link to="/" aria-label="Faython home">
             <Logo />
@@ -44,18 +41,18 @@ export function AuthLayout({
           </p>
 
           <ul className="grid gap-3.5">
-            {items.map((f) => (
-              <li className="flex items-center gap-3 text-sm" key={f}>
+            {items.map((feature) => (
+              <li className="flex items-center gap-3 text-sm" key={feature}>
                 <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
                   ✓
                 </span>
-                {f}
+                {feature}
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative text-xs leading-[1.6] text-muted-foreground">
+        <p className="relative mt-12 text-xs leading-[1.6] text-muted-foreground">
           CogniTech Integrated Solution (CIS) — Port Harcourt, Rivers State,
           Nigeria.
         </p>

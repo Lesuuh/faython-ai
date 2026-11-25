@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -15,7 +20,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { Markdown } from "@/components/Markdown";
 import { useProject } from "@/context/ProjectContext";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import {
   askProject,
   generateProjectChapter,
@@ -49,7 +54,9 @@ export function ProjectDetail() {
     return (
       <main className="flex min-h-0 flex-1 items-center justify-center px-6">
         <div className="max-w-sm text-center">
-          <h1 className="text-lg font-bold tracking-[-0.01em]">Project not found</h1>
+          <h1 className="text-lg font-bold tracking-[-0.01em]">
+            Project not found
+          </h1>
           <p className="mt-2 text-sm leading-relaxed text-muted">
             It may have been deleted, or it belongs to another account.
           </p>
@@ -100,10 +107,14 @@ function ProjectThread({ project }: { project: Project }) {
   const summary = intakeSummary(project.intake);
   const written = chapterMessages(project.messages);
   const writtenNumbers = new Set(written.map((m) => m.chapterNumber));
-  const doneCount = project.chapters.filter((c) => c.state === "done" && c.content).length;
+  const doneCount = project.chapters.filter(
+    (c) => c.state === "done" && c.content,
+  ).length;
 
   function scrollToChapter(n: number) {
-    document.getElementById(`msg-ch-${n}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document
+      .getElementById(`msg-ch-${n}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function push(kind: MessageKind, content: string, chapterNumber?: number) {
@@ -155,8 +166,13 @@ function ProjectThread({ project }: { project: Project }) {
         spend(pass, "ask", "Project question");
       }
     } catch (err) {
-      if (chapter) setChapter(project.id, chapter.number, { state: chapter.content ? "done" : "error" });
-      setError(err instanceof Error ? err.message : "Something went wrong. Try again.");
+      if (chapter)
+        setChapter(project.id, chapter.number, {
+          state: chapter.content ? "done" : "error",
+        });
+      setError(
+        err instanceof Error ? err.message : "Something went wrong. Try again.",
+      );
     } finally {
       setBusy(false);
       setBusyLabel("");
@@ -219,7 +235,11 @@ function ProjectThread({ project }: { project: Project }) {
                 <Button size="sm" type="submit">
                   Save
                 </Button>
-                <Button size="sm" variant="muted" onClick={() => setRenaming(false)}>
+                <Button
+                  size="sm"
+                  variant="muted"
+                  onClick={() => setRenaming(false)}
+                >
                   Cancel
                 </Button>
               </form>
@@ -319,10 +339,13 @@ function ProjectThread({ project }: { project: Project }) {
             {project.messages.length === 0 && (
               <div className="rounded-xl border border-dashed border-border px-5 py-8 text-center">
                 <Sparkles size={20} className="mx-auto text-muted-foreground" />
-                <p className="mt-3 text-[14px] font-semibold text-foreground">Nothing written yet</p>
+                <p className="mt-3 text-[14px] font-semibold text-foreground">
+                  Nothing written yet
+                </p>
                 <p className="mx-auto mt-1.5 max-w-[46ch] text-[13px] leading-relaxed text-muted">
-                  Ask for a chapter below — “write chapter one”, “next chapter” — or just type a
-                  question about your scope, objectives or methods.
+                  Ask for a chapter below — “write chapter one”, “next chapter”
+                  — or just type a question about your scope, objectives or
+                  methods.
                 </p>
               </div>
             )}
@@ -458,7 +481,8 @@ function ProjectThread({ project }: { project: Project }) {
             )}
             <p className="text-[11px] leading-[1.6] text-muted-foreground">
               {generationCost("chapter").toLocaleString()} tokens per chapter ·{" "}
-              {generationCost("ask").toLocaleString()} per question · {DISCLAIMER}
+              {generationCost("ask").toLocaleString()} per question ·{" "}
+              {DISCLAIMER}
             </p>
           </div>
         </div>

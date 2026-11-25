@@ -1,7 +1,8 @@
 import { useState, type ReactElement } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export function useSignOut(): {
   requestSignOut: () => void;
@@ -10,12 +11,14 @@ export function useSignOut(): {
   const { signOut } = useAuth();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
 
   async function confirmSignOut() {
     setBusy(true);
     try {
       await signOut();
       setOpen(false);
+      navigate("/login", { replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign-out failed");
     } finally {

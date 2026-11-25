@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Download, Menu, Pencil } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
 import { ProjectProvider, useProject } from "@/context/ProjectContext";
 import { exportProjectDocx } from "@/lib/export";
 import { Logo } from "@/components/Logo";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ChatSidebar } from "@/components/ChatSidebar";
+import { useAuth } from "@/hooks/useAuth";
 
 function headerTitle(pathname: string): string | null {
   if (pathname === "/") return null;
@@ -130,6 +130,7 @@ function ShellHeader({ onOpenMobile }: { onOpenMobile: () => void }) {
 
 export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  
 
   return (
     <ProjectProvider>
