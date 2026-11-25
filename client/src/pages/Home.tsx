@@ -13,6 +13,7 @@ import { useProject } from "@/context/ProjectContext";
 import { loadAppSettings } from "@/lib/settings-store";
 import { cx } from "@/lib/cx";
 import { useAuth } from "@/hooks/useAuth";
+import { api } from "@/lib/api";
 
 function relativeDate(iso: string): string {
   const then = new Date(iso).getTime();
@@ -43,6 +44,14 @@ export function Home() {
 
   return (
     <main className="min-h-0 flex-1 overflow-y-auto">
+      <button
+        onClick={async () => {
+          const res = await api.getMe();
+          console.log(res);
+        }}
+      >
+        Test API
+      </button>
       <div className="mx-auto flex w-full max-w-[900px] flex-col px-5 py-10 sm:px-6 sm:py-14 lg:px-8">
         <section className="mx-auto flex w-full max-w-[640px] flex-col items-center py-8 text-center sm:py-14">
           <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary-border bg-primary-soft text-primary">
