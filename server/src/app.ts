@@ -18,7 +18,9 @@ import type { Response, Request } from "express";
 export const app = express();
 
 // Security
-app.use(helmet());
+
+const helmetMiddleware = (helmet as any).default ?? helmet;
+app.use(helmetMiddleware());
 
 app.use(
   cors({
